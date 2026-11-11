@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1000" fill="none">
+  <path d="M0 638c173-57 277-68 432-39 153 29 266 41 402-10 139-52 237-49 366-2v413H0V638Z" fill="currentColor" opacity=".06"/>
+  <path d="M0 706c182-69 301-78 462-43 155 34 266 48 413-3 123-42 215-40 325-4M0 759c178-63 298-72 455-39 165 35 289 53 438 2 117-40 207-37 307-5M0 818c169-58 297-68 455-36 169 34 305 51 459 0 108-36 194-35 286-7M0 878c169-52 294-62 453-32 174 33 317 49 476-1 99-31 184-32 271-9" stroke="currentColor" stroke-width="2" opacity=".2"/>
+  <path d="M0 537c165-51 286-51 408-16 101 29 185 29 305-7 130-40 232-38 344 2 55 20 99 25 143 17M0 581c160-43 278-44 398-11 110 30 196 31 325-7 126-37 220-34 330 4 58 20 100 25 147 17" stroke="currentColor" stroke-width="2" opacity=".13"/>
+  <path d="M132 1000 421 605m87 395 190-444m108 444 91-375m-9 375 271-395M298 676l647 61M248 746l775 71M194 831l837 81" stroke="currentColor" stroke-width="2" opacity=".16"/>
+  <path d="M0 470c92-25 168-31 257-20 90 12 147 6 214-19 82-31 157-30 230-2 75 29 141 35 224 7 93-31 183-31 275-3" stroke="currentColor" stroke-width="2" opacity=".12"/>
+  <circle cx="934" cy="228" r="52" stroke="currentColor" stroke-width="2" opacity=".2"/>
+  <path d="M0 0h1200v1000H0z" stroke="currentColor" stroke-width="2" opacity=".1"/>
+</svg>

@@ -32,6 +32,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+.env.local
+.env.*.local
+context/memory.md
+context/ui-registry.md
+.claude/settings.local.json
+node_modules/
+.next/
+dist/
 
 # vercel
 .vercel

@@ -1,0 +1,1 @@
+Read /agents.md first and follow it strictly. Then read the current phase spec in /docs/specs/.
