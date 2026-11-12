@@ -1,21 +1,23 @@
 import type { PropertyStatus } from "@/lib/properties/model";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
 export type { PropertyStatus } from "@/lib/properties/model";
 
 type StatusBadgeProps = {
   status: PropertyStatus;
+  content: SiteContent;
 };
 
-const statusLabels: Record<PropertyStatus, string> = {
-  available: "Available",
-  reserved: "Reserved",
-  sold: "Sold",
-};
+const statusContentKeys = {
+  available: "properties.statusAvailable",
+  reserved: "properties.statusReserved",
+  sold: "properties.statusSold",
+} as const;
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ content, status }: StatusBadgeProps) {
   return (
     <span className={`status-badge status-badge--${status}`}>
-      {statusLabels[status]}
+      {content[statusContentKeys[status]]}
     </span>
   );
 }

@@ -3,51 +3,51 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { getPublishedJournalPosts } from "@/lib/journal/data";
+import type { SiteContent } from "@/lib/site-content/defaults";
 import { JournalCard } from "./journal-card";
 
-function PlannedJournalTopics() {
+function PlannedJournalTopics({ content }: { content: SiteContent }) {
   const topics = [
-    {
-      imageAlt:
-        "Temporary image for a planned journal topic about the Nairobi Metropolitan Area",
-      title: "Land in the Nairobi Metropolitan Area",
-    },
-    {
-      imageAlt:
-        "Temporary image for a planned journal topic about Kiambu County",
-      title: "Land in Kiambu County",
-    },
-    {
-      imageAlt:
-        "Temporary image for a planned journal topic about Central Kenya",
-      title: "Land in Central Kenya",
-    },
+    content["home.plannedTopicOne"],
+    content["home.plannedTopicTwo"],
+    content["home.plannedTopicThree"],
   ];
 
   return (
     <div className="home-journal-grid">
-      {topics.map((topic) => (
-        <article className="home-journal-card" key={topic.title}>
-          <div className="home-journal-image">
-            <Image
-              src="/land-placeholder.svg"
-              alt={topic.imageAlt}
-              width={800}
-              height={520}
-            />
-            <span className="home-image-label">Temporary land image</span>
-          </div>
-          <div className="home-journal-copy">
-            <p className="home-journal-label">Planned journal topic</p>
-            <h3>{topic.title}</h3>
-          </div>
-        </article>
-      ))}
+      {topics.map((title) => {
+        const topicLocation = title.startsWith("Land in ")
+          ? title.slice("Land in ".length)
+          : title;
+        const imageAlt = `${content["home.plannedTopicImageAlt"]} ${topicLocation}`;
+
+        return (
+          <article className="home-journal-card" key={title}>
+            <div className="home-journal-image">
+              <Image
+                src="/land-placeholder.svg"
+                alt={imageAlt}
+                width={800}
+                height={520}
+              />
+              <span className="home-image-label">
+                {content["home.heroImageLabel"]}
+              </span>
+            </div>
+            <div className="home-journal-copy">
+              <p className="home-journal-label">
+                {content["home.plannedTopicLabel"]}
+              </p>
+              <h3>{title}</h3>
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }
 
-function HomeJournalFallback() {
+function HomeJournalFallback({ content }: { content: SiteContent }) {
   return (
     <section
       className="home-journal"
@@ -58,21 +58,18 @@ function HomeJournalFallback() {
         <div className="home-regions-heading">
           <div>
             <h2 className="home-section-title" id="journal-title">
-              Notes on land and place.
+              {content["home.journalTitle"]}
             </h2>
-            <p className="home-section-copy">
-              Future journal topics will focus on regions where Rhema sells
-              land. These are planned topics, not published articles.
-            </p>
+            <p className="home-section-copy">{content["home.journalPlannedCopy"]}</p>
           </div>
         </div>
-        <PlannedJournalTopics />
+        <PlannedJournalTopics content={content} />
       </div>
     </section>
   );
 }
 
-async function HomeJournalContent() {
+async function HomeJournalContent({ content }: { content: SiteContent }) {
   const result = await getPublishedJournalPosts(1, 3);
 
   if (result.status === "error") {
@@ -86,14 +83,14 @@ async function HomeJournalContent() {
           <div className="home-regions-heading">
             <div>
               <h2 className="home-section-title" id="journal-title">
-                Notes on land and place.
+                {content["home.journalTitle"]}
               </h2>
               <p className="home-section-copy" role="alert">
-                Rhema&apos;s published journal articles could not be loaded.
+                {content["home.journalErrorCopy"]}
               </p>
             </div>
             <Link className="home-text-link" href="/contact">
-              Ask Rhema a question
+              {content["home.journalAskLink"]}
               <ArrowUpRight aria-hidden="true" size={14} />
             </Link>
           </div>
@@ -114,37 +111,39 @@ async function HomeJournalContent() {
         <div className="home-regions-heading">
           <div>
             <h2 className="home-section-title" id="journal-title">
-              Notes on land and place.
+              {content["home.journalTitle"]}
             </h2>
             <p className="home-section-copy">
               {hasPosts
-                ? "Articles about land and the areas where Rhema sells plots."
-                : "Future journal topics will focus on regions where Rhema sells land. These are planned topics, not published articles."}
+                ? content["home.journalPublishedCopy"]
+                : content["home.journalPlannedCopy"]}
             </p>
           </div>
           <Link className="home-text-link" href={hasPosts ? "/journal" : "/contact"}>
-            {hasPosts ? "Read the journal" : "Ask Rhema a question"}
+            {hasPosts
+              ? content["home.journalReadLink"]
+              : content["home.journalAskLink"]}
             <ArrowUpRight aria-hidden="true" size={14} />
           </Link>
         </div>
         {hasPosts ? (
           <div className="home-journal-grid home-journal-grid--published">
             {result.posts.map((post) => (
-              <JournalCard key={post.id} post={post} />
+              <JournalCard content={content} key={post.id} post={post} />
             ))}
           </div>
         ) : (
-          <PlannedJournalTopics />
+          <PlannedJournalTopics content={content} />
         )}
       </div>
     </section>
   );
 }
 
-export function HomeJournal() {
+export function HomeJournal({ content }: { content: SiteContent }) {
   return (
-    <Suspense fallback={<HomeJournalFallback />}>
-      <HomeJournalContent />
+    <Suspense fallback={<HomeJournalFallback content={content} />}>
+      <HomeJournalContent content={content} />
     </Suspense>
   );
 }

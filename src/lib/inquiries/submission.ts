@@ -2,6 +2,10 @@ import {
   validateInquiryForm,
   type InquiryValues,
 } from "./validation";
+import {
+  getDefaultSiteContent,
+  type SiteContent,
+} from "../site-content/defaults";
 
 export type InquiryActionState = {
   status: "idle" | "success" | "error";
@@ -22,13 +26,14 @@ export type InquirySubmissionDependencies = {
 export async function processInquirySubmission(
   formData: FormData,
   dependencies: InquirySubmissionDependencies,
+  content: SiteContent = getDefaultSiteContent(),
 ): Promise<InquiryActionState> {
-  const validation = validateInquiryForm(formData);
+  const validation = validateInquiryForm(formData, content);
 
   if (!validation.success) {
     return {
       status: "error",
-      message: "Please review the highlighted fields.",
+      message: content["inquiry.reviewFields"],
       fieldErrors: validation.fieldErrors,
     };
   }
@@ -37,7 +42,7 @@ export async function processInquirySubmission(
   if (typeof honeypot === "string" && honeypot.trim()) {
     return {
       status: "error",
-      message: "We could not send your inquiry. Please try again.",
+      message: content["inquiry.retry"],
       fieldErrors: {},
     };
   }
@@ -46,7 +51,7 @@ export async function processInquirySubmission(
   if (typeof token !== "string" || !token.trim()) {
     return {
       status: "error",
-      message: "Complete the security check before sending.",
+      message: content["inquiry.completeSecurity"],
       fieldErrors: {},
     };
   }
@@ -55,7 +60,7 @@ export async function processInquirySubmission(
   if (!verified) {
     return {
       status: "error",
-      message: "The security check expired or could not be verified. Please try again.",
+      message: content["inquiry.securityExpired"],
       fieldErrors: {},
     };
   }
@@ -68,15 +73,15 @@ export async function processInquirySubmission(
     if (propertyCheck === "not-published") {
       return {
         status: "error",
-        message: "This property is not available for public inquiries.",
-        fieldErrors: { propertyId: "Reload the property page and try again." },
+        message: content["inquiry.propertyUnavailable"],
+        fieldErrors: { propertyId: content["inquiry.reloadProperty"] },
       };
     }
 
     if (propertyCheck === "error") {
       return {
         status: "error",
-        message: "We could not verify the property. Please try again.",
+        message: content["inquiry.verifyProperty"],
         fieldErrors: {},
       };
     }
@@ -86,15 +91,14 @@ export async function processInquirySubmission(
   if (!inserted) {
     return {
       status: "error",
-      message:
-        "Your inquiry was not sent. Please try again or contact Rhema by phone or WhatsApp.",
+      message: content["inquiry.notSent"],
       fieldErrors: {},
     };
   }
 
   return {
     status: "success",
-    message: "Thank you. Rhema has received your inquiry.",
+    message: content["inquiry.success"],
     fieldErrors: {},
   };
 }

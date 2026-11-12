@@ -3,15 +3,19 @@ import { Suspense } from "react";
 import { PropertyCard } from "@/components/ui/cards";
 import { getPublishedProperties } from "@/lib/properties/data";
 import { buildPageMetadata } from "@/lib/seo/site-url";
+import { getPublicSiteContent } from "@/lib/site-content/data";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
-export const metadata = buildPageMetadata({
-  title: "Properties",
-  description:
-    "Ask Rhema Real Estates about plots in the Nairobi Metropolitan Area, Kiambu, Machakos, Kajiado and Central Kenya.",
-  path: "/properties",
-});
+export async function generateMetadata() {
+  const content = await getPublicSiteContent();
+  return buildPageMetadata({
+    title: content["properties.metaTitle"],
+    description: content["properties.metaDescription"],
+    path: "/properties",
+  });
+}
 
-async function PropertyListingContent() {
+async function PropertyListingContent({ content }: { content: SiteContent }) {
   const result = await getPublishedProperties();
 
   if (result.status === "error") {
@@ -22,14 +26,11 @@ async function PropertyListingContent() {
         role="alert"
       >
         <h2 id="properties-error-title">
-          Rhema&apos;s property details could not be loaded.
+          {content["properties.errorTitle"]}
         </h2>
-        <p>
-          Contact Rhema to ask about plots in the Nairobi Metropolitan Area,
-          Kiambu, Machakos, Kajiado or Central Kenya.
-        </p>
+        <p>{content["properties.errorCopy"]}</p>
         <Link className="button button--primary-outlined" href="/contact">
-          Contact Rhema
+          {content["properties.errorLink"]}
         </Link>
       </section>
     );
@@ -42,21 +43,21 @@ async function PropertyListingContent() {
         aria-labelledby="properties-empty-title"
       >
         <h2 id="properties-empty-title">
-          Property listings are not available here yet.
+          {content["properties.emptyTitle"]}
         </h2>
-        <p>
-          Contact Rhema directly to ask about current plots and request details
-          for a location.
-        </p>
+        <p>{content["properties.emptyCopy"]}</p>
         <Link className="button button--primary-outlined" href="/contact">
-          Enquire about plots
+          {content["properties.emptyLink"]}
         </Link>
       </section>
     );
   }
 
   return (
-    <section className="property-listing" aria-label="Published properties">
+    <section
+      className="property-listing"
+      aria-label={content["properties.listLabel"]}
+    >
       <div className="card-grid">
         {result.properties.map((property) => (
           <PropertyCard
@@ -70,6 +71,7 @@ async function PropertyListingContent() {
             priceKes={property.priceKes}
             status={property.status}
             title={property.title}
+            content={content}
           />
         ))}
       </div>
@@ -77,25 +79,24 @@ async function PropertyListingContent() {
   );
 }
 
-export default function PropertiesPage() {
+export default async function PropertiesPage() {
+  const content = await getPublicSiteContent();
+
   return (
     <main className="route-page" id="main-content">
       <div className="site-width">
         <header className="route-intro">
-          <h1 className="route-title">Land in Rhema&apos;s locations.</h1>
-          <p className="route-description">
-            Rhema Real Estates sells plots in the Nairobi Metropolitan Area,
-            Kiambu, Machakos, Kajiado and Central Kenya.
-          </p>
+          <h1 className="route-title">{content["properties.title"]}</h1>
+          <p className="route-description">{content["properties.intro"]}</p>
         </header>
         <Suspense
           fallback={
             <section className="route-empty-state" aria-live="polite">
-              <p>Loading Rhema&apos;s published property details.</p>
+              <p>{content["properties.loading"]}</p>
             </section>
           }
         >
-          <PropertyListingContent />
+          <PropertyListingContent content={content} />
         </Suspense>
       </div>
     </main>

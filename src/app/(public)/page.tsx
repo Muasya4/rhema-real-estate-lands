@@ -10,38 +10,44 @@ import { Suspense } from "react";
 import { HomeJournal } from "@/components/journal/home-journal";
 import { HomeRegionList } from "@/components/regions/home-region-list";
 import { buildPageMetadata } from "@/lib/seo/site-url";
+import { getPublicSiteContent } from "@/lib/site-content/data";
 
 const phoneNumber = "0711634163";
 const whatsappNumber = "254711634163";
 
-export const metadata = buildPageMetadata({
-  title: "Land plots in Kenya",
-  description:
-    "Rhema Real Estates sells plots in the Nairobi Metropolitan Area, Kiambu, Machakos, Kajiado and Central Kenya.",
-  path: "/",
-});
+export async function generateMetadata() {
+  const content = await getPublicSiteContent();
+  return buildPageMetadata({
+    title: content["home.metaTitle"],
+    description: content["site.metaDescription"],
+    path: "/",
+  });
+}
 
-export default function Home() {
+export default async function Home() {
+  const content = await getPublicSiteContent();
+
   return (
     <>
-      <main id="main-content">
+      <main className="home-page" id="main-content">
         <section className="home-width home-hero" aria-labelledby="home-title">
           <div className="home-hero-copy">
-            <p className="home-location-line">Nairobi Metropolitan Area / Central Kenya</p>
+            <p className="home-location-line">{content["home.locationLine"]}</p>
             <h1 className="home-title" id="home-title">
-              Land across <em>Nairobi</em> and Central Kenya.
+              {content["home.titleStart"]}{" "}
+              <em>{content["home.titleHighlight"]}</em>{" "}
+              {content["home.titleEnd"]}
             </h1>
             <p className="home-intro">
-              Rhema Real Estates sells plots in the Nairobi Metropolitan Area,
-              Kiambu, Machakos, Kajiado and Central Kenya.
+              {content["home.intro"]}
             </p>
             <div className="home-hero-actions">
               <Link className="button button--primary-outlined" href="/regions">
-                See our locations
+                {content["home.locationsLink"]}
                 <ArrowDownRight aria-hidden="true" size={14} />
               </Link>
               <Link className="home-text-link" href="/contact">
-                Make a private enquiry
+                {content["home.privateEnquiryLink"]}
                 <ArrowUpRight aria-hidden="true" size={14} />
               </Link>
             </div>
@@ -51,16 +57,16 @@ export default function Home() {
             <div className="home-image-frame">
               <Image
                 src="/land-placeholder.svg"
-                alt="Temporary illustration of open land, to be replaced with property photography"
+                alt={content["home.heroImageAlt"]}
                 width={1200}
                 height={1000}
                 priority
               />
-              <span className="home-image-label">Temporary land image</span>
+              <span className="home-image-label">{content["home.heroImageLabel"]}</span>
             </div>
             <figcaption className="home-image-caption">
-              <span>Rhema Real Estates</span>
-              <span>Land in Kenya</span>
+              <span>{content["home.heroCaptionName"]}</span>
+              <span>{content["home.heroCaptionLocation"]}</span>
             </figcaption>
           </figure>
         </section>
@@ -75,33 +81,30 @@ export default function Home() {
               <div className="home-image-frame home-image-frame--portfolio">
                 <Image
                   src="/land-placeholder.svg"
-                  alt="Temporary illustration for Rhema Real Estates land portfolio"
+                  alt={content["home.portfolioImageAlt"]}
                   width={1200}
                   height={1000}
                 />
-                <span className="home-image-label">Temporary land image</span>
+                <span className="home-image-label">{content["home.portfolioImageLabel"]}</span>
               </div>
               <figcaption className="home-image-caption">
-                <span>Land portfolio</span>
-                <span>Photography to be added</span>
+                <span>{content["home.portfolioCaptionTitle"]}</span>
+                <span>{content["home.portfolioCaptionNote"]}</span>
               </figcaption>
             </figure>
 
             <div className="home-portfolio-copy">
               <h2 className="home-section-title" id="portfolio-title">
-                Ask Rhema about plots in your area.
+                {content["home.portfolioTitle"]}
               </h2>
               <p className="home-section-copy">
-                Rhema sells plots in the Nairobi Metropolitan Area, Ruiru,
-                Kamakis, the Thika Road corridor, Kiambu County, Machakos,
-                Kajiado and Central Kenya.
+                {content["home.portfolioCopy"]}
               </p>
               <p className="home-section-copy">
-                Ask Rhema about current plots and request details for the
-                location you have in mind.
+                {content["home.portfolioFollowUp"]}
               </p>
               <Link className="home-text-link" href="/contact">
-                Enquire about land
+                {content["home.portfolioLink"]}
                 <ArrowUpRight aria-hidden="true" size={14} />
               </Link>
             </div>
@@ -117,15 +120,14 @@ export default function Home() {
             <div className="home-regions-heading">
               <div>
                 <h2 className="home-section-title" id="regions-title">
-                  Regions in focus
+                  {content["home.regionsTitle"]}
                 </h2>
                 <p className="home-section-copy">
-                  Rhema Real Estates sells land across Nairobi, Kiambu,
-                  Machakos, Kajiado and Central Kenya.
+                  {content["home.regionsCopy"]}
                 </p>
               </div>
               <Link className="home-text-link" href="/contact">
-                Ask about a region
+                {content["home.regionsLink"]}
                 <ArrowUpRight aria-hidden="true" size={14} />
               </Link>
             </div>
@@ -133,11 +135,11 @@ export default function Home() {
             <Suspense
               fallback={
                 <p className="region-load-message" aria-live="polite">
-                  Loading regions...
+                  {content["regions.loading"]}
                 </p>
               }
             >
-              <HomeRegionList />
+              <HomeRegionList content={content} />
             </Suspense>
           </div>
         </section>
@@ -150,15 +152,14 @@ export default function Home() {
             <div className="home-regions-heading">
               <div>
                 <h2 className="home-section-title" id="enquiry-guide-title">
-                  Start with the place.
+                  {content["home.enquiryTitle"]}
                 </h2>
                 <p className="home-section-copy">
-                  Tell Rhema which area you are considering, then ask about
-                  current plots there.
+                  {content["home.enquiryCopy"]}
                 </p>
               </div>
               <Link className="home-text-link" href="/contact">
-                Speak with Rhema
+                {content["home.enquiryLink"]}
                 <ArrowUpRight aria-hidden="true" size={14} />
               </Link>
             </div>
@@ -166,33 +167,24 @@ export default function Home() {
             <ol className="home-enquiry-steps">
               <li className="home-enquiry-step">
                 <span className="home-step-number">01</span>
-                <h3>Name a region</h3>
-                <p>
-                  Choose one of the regions listed above, then ask Rhema about
-                  current plots there.
-                </p>
+                <h3>{content["home.stepOneTitle"]}</h3>
+                <p>{content["home.stepOneCopy"]}</p>
               </li>
               <li className="home-enquiry-step">
                 <span className="home-step-number">02</span>
-                <h3>Request plot details</h3>
-                <p>
-                  Contact Rhema to ask what is available in the area you have
-                  chosen.
-                </p>
+                <h3>{content["home.stepTwoTitle"]}</h3>
+                <p>{content["home.stepTwoCopy"]}</p>
               </li>
               <li className="home-enquiry-step">
                 <span className="home-step-number">03</span>
-                <h3>Speak directly</h3>
-                <p>
-                  Call or send a WhatsApp message to discuss your enquiry with
-                  Rhema.
-                </p>
+                <h3>{content["home.stepThreeTitle"]}</h3>
+                <p>{content["home.stepThreeCopy"]}</p>
               </li>
             </ol>
           </div>
         </section>
 
-        <HomeJournal />
+        <HomeJournal content={content} />
 
         <section
           className="home-contact"
@@ -202,17 +194,16 @@ export default function Home() {
           <div className="home-width home-contact-layout">
             <div>
               <h2 className="home-contact-title" id="contact-title">
-                Ask Rhema about land in your area.
+                {content["home.contactTitle"]}
               </h2>
               <p className="home-contact-copy">
-                Call or send a WhatsApp message about plots in the Nairobi
-                Metropolitan Area, Kiambu, Machakos, Kajiado or Central Kenya.
+                {content["home.contactCopy"]}
               </p>
             </div>
             <div className="home-contact-actions">
               <a className="home-contact-link" href={`tel:${phoneNumber}`}>
                 <Phone aria-hidden="true" size={16} />
-                Call {phoneNumber}
+                {content["home.callLink"]} {phoneNumber}
               </a>
               <a
                 className="home-contact-link"
@@ -221,7 +212,7 @@ export default function Home() {
                 target="_blank"
               >
                 <MessageCircle aria-hidden="true" size={16} />
-                WhatsApp Rhema
+                {content["home.whatsappLink"]}
                 <ArrowUpRight aria-hidden="true" size={14} />
               </a>
             </div>

@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
 const { processInquirySubmission } = require("../../src/lib/inquiries/submission.ts");
+const { getDefaultSiteContent } = require("../../src/lib/site-content/defaults.ts");
 
 const publishedPropertyId = "11111111-1111-4111-8111-111111111111";
 
@@ -141,4 +142,22 @@ test("database failure is returned as an error, not success", async () => {
 
   assert.equal(result.status, "error");
   assert.match(result.message, /was not sent/);
+});
+
+test("inquiry validation and feedback use the current editable site copy", async () => {
+  const { dependencies } = createDependencies();
+  const content = {
+    ...getDefaultSiteContent(),
+    "inquiry.nameRequired": "Enter a full name.",
+    "inquiry.reviewFields": "Check the form fields.",
+  };
+  const result = await processInquirySubmission(
+    createForm({ name: "" }),
+    dependencies,
+    content,
+  );
+
+  assert.equal(result.status, "error");
+  assert.equal(result.fieldErrors.name, "Enter a full name.");
+  assert.equal(result.message, "Check the form fields.");
 });

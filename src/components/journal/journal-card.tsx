@@ -4,17 +4,19 @@ import {
   formatJournalDate,
   type PublicJournalPost,
 } from "@/lib/journal/model";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
 type JournalCardProps = {
+  content: SiteContent;
   post: PublicJournalPost & { coverImageSrc: string | null };
 };
 
-export function JournalCard({ post }: JournalCardProps) {
+export function JournalCard({ content, post }: JournalCardProps) {
   return (
     <article className="journal-card">
       {post.coverImageSrc ? (
         <Link
-          aria-label={`Read ${post.title}`}
+          aria-label={`${content["journal.readArticleLink"]} ${post.title}`}
           className="journal-card-image"
           href={`/journal/${post.slug}`}
         >

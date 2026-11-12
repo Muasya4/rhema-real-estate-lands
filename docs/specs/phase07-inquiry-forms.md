@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented locally. The `/contact` page has a protected general inquiry form, but live submission remains unverified until the local Supabase secret and Turnstile keys are configured.
+Implemented locally. The `/contact` page has a protected general inquiry form. Production submission remains blocked until its server-side Supabase and Turnstile environment variables are configured in Vercel. This is the first critical task for the next session; see the top of `docs/progress.md`.
 
 ## Goal
 
@@ -37,6 +37,7 @@ Provide a private inquiry form that records valid inquiries and gives the visito
 - Duplicate submissions and abuse are handled according to the agreed protection approach.
 - Phone and WhatsApp alternatives use the documented contact number.
 - Tests cover validation, mocked successful submission, Turnstile rejection and replay, property association checks, honeypot handling, and insert failure. Existing RLS/grants remain unchanged.
+- Public inquiry labels and feedback wording are editable through the protected site-content editor. Server-side validation rules, Turnstile checks, honeypot behavior, and Supabase authorization remain code-controlled.
 
 ## Dependencies
 
@@ -46,4 +47,4 @@ Provide a private inquiry form that records valid inquiries and gives the visito
 
 ## Validation
 
-Automated tests cover server-side validation, mocked successful insertion, Turnstile rejection/replay, honeypot handling, property association, and database failure. Before launch, configure development-only keys in ignored `.env.local`, test the live Turnstile flow, verify keyboard behavior and RLS/grants, and submit only synthetic data with approval.
+Automated tests cover server-side validation, mocked successful insertion, Turnstile rejection/replay, honeypot handling, property association, and database failure. Before accepting public inquiries, configure `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY` in Vercel Production, redeploy, verify the live Turnstile flow and RLS/grants, and submit only synthetic data with owner approval. Do not grant anonymous direct inquiry-table writes.

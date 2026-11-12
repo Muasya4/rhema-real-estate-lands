@@ -1,0 +1,242 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import {
+  SITE_CONTENT_DEFAULTS,
+  SITE_CONTENT_SECTIONS,
+  type SiteContent,
+  type SiteContentField,
+  type SiteContentSection,
+} from "@/lib/site-content/defaults";
+import {
+  restoreSiteContent,
+  saveSiteContentSection,
+} from "@/lib/admin/site-content/actions";
+import { siteContentFieldMaximumLength } from "@/lib/site-content/model";
+import {
+  initialSiteContentActionState,
+  type SiteContentActionState,
+} from "@/lib/admin/site-content/state";
+
+function ActionMessage({ state }: { state: SiteContentActionState }) {
+  if (!state.message) return null;
+
+  return (
+    <p
+      aria-live="polite"
+      className={`admin-form-message admin-form-message--${state.status}`}
+      role={state.status === "error" ? "alert" : "status"}
+    >
+      {state.message}
+    </p>
+  );
+}
+
+function ContentField({
+  field,
+  content,
+  errorMessage,
+}: {
+  field: SiteContentField;
+  content: SiteContent;
+  errorMessage: string | undefined;
+}) {
+  const error = field.key.replaceAll(".", "-");
+  const value = content[field.key];
+  const defaultValue = SITE_CONTENT_DEFAULTS[field.key];
+  const descriptionId = `${error}-default`;
+
+  return (
+    <div className="field site-content-field">
+      <label className="field-label" htmlFor={error}>
+        {field.label}
+      </label>
+      {field.multiline ? (
+        <textarea
+          aria-describedby={
+            errorMessage
+              ? `${error}-error${value !== defaultValue ? ` ${descriptionId}` : ""}`
+              : value !== defaultValue
+                ? descriptionId
+                : undefined
+          }
+          aria-invalid={Boolean(errorMessage)}
+          className="field-control field-control--textarea"
+          defaultValue={value}
+          id={error}
+          maxLength={siteContentFieldMaximumLength}
+          name={`content.${field.key}`}
+          required
+          rows={4}
+        />
+      ) : (
+        <input
+          aria-describedby={
+            errorMessage
+              ? `${error}-error${value !== defaultValue ? ` ${descriptionId}` : ""}`
+              : value !== defaultValue
+                ? descriptionId
+                : undefined
+          }
+          aria-invalid={Boolean(errorMessage)}
+          className="field-control"
+          defaultValue={value}
+          id={error}
+          maxLength={siteContentFieldMaximumLength}
+          name={`content.${field.key}`}
+          required
+        />
+      )}
+      {value !== defaultValue ? (
+        <p className="field-hint" id={descriptionId}>
+          Original wording: {defaultValue}
+        </p>
+      ) : null}
+      {errorMessage ? (
+        <p className="admin-field-error" id={`${error}-error`} role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function RestoreForm({
+  scope,
+  label,
+}: {
+  scope: string;
+  label: string;
+}) {
+  const [state, formAction, pending] = useActionState(
+    restoreSiteContent,
+    initialSiteContentActionState,
+  );
+  const [confirming, setConfirming] = useState(false);
+
+  return (
+    <div className="site-content-restore">
+      <form action={formAction} onSubmit={() => setConfirming(false)}>
+        <input name="scope" type="hidden" value={scope} />
+        {confirming ? (
+          <div className="site-content-restore-confirm">
+            <p>
+              Restore {label.toLowerCase()} to the original wording? Saved
+              changes in this scope will be removed.
+            </p>
+            <button
+              className="button button--primary-outlined"
+              disabled={pending}
+              type="submit"
+            >
+              {pending ? "Restoring..." : "Confirm restore"}
+            </button>
+            <button
+              className="text-link"
+              disabled={pending}
+              onClick={() => setConfirming(false)}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            className="button button--primary-outlined"
+            disabled={pending}
+            onClick={() => setConfirming(true)}
+            type="button"
+          >
+            {pending ? "Restoring..." : label}
+          </button>
+        )}
+      </form>
+      <ActionMessage state={state} />
+    </div>
+  );
+}
+
+function ContentSection({
+  section,
+  content,
+}: {
+  section: SiteContentSection;
+  content: SiteContent;
+}) {
+  const [state, formAction, pending] = useActionState(
+    saveSiteContentSection,
+    initialSiteContentActionState,
+  );
+  const formKey = JSON.stringify(
+    section.fields.map(({ key }) => content[key]),
+  );
+
+  return (
+    <details className="site-content-section">
+      <summary>
+        <span>{section.title}</span>
+        <span className="site-content-section-count">
+          {section.fields.length} fields
+        </span>
+      </summary>
+      <form
+        action={formAction}
+        className="admin-property-form"
+        key={formKey}
+      >
+        <input name="sectionId" type="hidden" value={section.id} />
+        <ActionMessage state={state} />
+        <div className="site-content-fields">
+          {section.fields.map((field) => (
+            <ContentField
+              content={content}
+              errorMessage={state.fieldErrors[field.key]}
+              field={field}
+              key={field.key}
+            />
+          ))}
+        </div>
+        <div className="admin-property-form-actions">
+          <button
+            className="button button--primary"
+            disabled={pending}
+            type="submit"
+          >
+            {pending ? "Saving..." : `Save ${section.title.toLowerCase()}`}
+          </button>
+        </div>
+      </form>
+      <RestoreForm
+        label={`Restore ${section.title} defaults`}
+        scope={section.id}
+      />
+    </details>
+  );
+}
+
+export function ContentManager({ content }: { content: SiteContent }) {
+  return (
+    <div className="site-content-manager">
+      <div className="site-content-manager-intro">
+        <p>
+          Fields are prefilled with the wording currently shown on the site.
+          Saving publishes the changes immediately. Record-specific property,
+          region, Journal, and CEO details are managed in their own sections.
+        </p>
+        <RestoreForm label="Restore all site defaults" scope="all" />
+      </div>
+      <nav aria-label="Content sections" className="site-content-index">
+        {SITE_CONTENT_SECTIONS.map((section) => (
+          <a href={`#content-${section.id}`} key={section.id}>
+            {section.title}
+          </a>
+        ))}
+      </nav>
+      {SITE_CONTENT_SECTIONS.map((section) => (
+        <div id={`content-${section.id}`} key={section.id}>
+          <ContentSection content={content} section={section} />
+        </div>
+      ))}
+    </div>
+  );
+}

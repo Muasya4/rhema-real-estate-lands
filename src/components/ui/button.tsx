@@ -1,6 +1,10 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-export type ButtonVariant = "primary-outlined" | "secondary-text" | "ghost";
+export type ButtonVariant =
+  | "primary-outlined"
+  | "secondary-text"
+  | "ghost"
+  | "forest";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;

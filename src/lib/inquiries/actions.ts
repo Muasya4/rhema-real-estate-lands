@@ -8,12 +8,12 @@ import {
   processInquirySubmission,
   type InquiryActionState,
 } from "./submission";
+import { getPublicSiteContent } from "@/lib/site-content/data";
 
-function getUnavailableState(): InquiryActionState {
+function getUnavailableState(content: Awaited<ReturnType<typeof getPublicSiteContent>>): InquiryActionState {
   return {
     status: "error",
-    message:
-      "The inquiry form is not available right now. Please call or WhatsApp Rhema.",
+    message: content["inquiry.serverUnavailable"],
     fieldErrors: {},
   };
 }
@@ -22,12 +22,13 @@ export async function submitInquiry(
   _previousState: InquiryActionState,
   formData: FormData,
 ): Promise<InquiryActionState> {
+  const content = await getPublicSiteContent();
   const turnstileSecret = process.env.TURNSTILE_SECRET_KEY?.trim();
   const supabaseSecret = process.env.SUPABASE_SECRET_KEY?.trim();
 
   if (!turnstileSecret || !supabaseSecret) {
     console.error("Inquiry form server configuration is incomplete.");
-    return getUnavailableState();
+    return getUnavailableState(content);
   }
 
   return processInquirySubmission(formData, {
@@ -88,5 +89,5 @@ export async function submitInquiry(
         throw error;
       }
     },
-  });
+  }, content);
 }

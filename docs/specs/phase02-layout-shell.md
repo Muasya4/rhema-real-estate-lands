@@ -18,7 +18,7 @@ Create a consistent, accessible shell for the public Rhema website and establish
 
 ## Requirements
 
-- Use `/` for the home page, `/properties` for the portfolio, `/regions` for service areas, `/journal` for published articles, and `/contact` for general inquiries. Property and journal detail routes use stable slugs.
+- Use `/` for the home page, `/about` for company information, `/properties` for the portfolio, `/regions` for service areas, `/journal` for published articles, and `/contact` for general inquiries. Property and journal detail routes use stable slugs.
 - Navigation items must point only to implemented routes or valid in-page anchors.
 - Use the design-system tokens and shared UI patterns from Phase 01.
 - Keep navigation keyboard-accessible, with a visible focus state and a clear mobile layout.
@@ -47,6 +47,8 @@ Run TypeScript, lint, and production build. Check keyboard navigation and route 
 - The root layout retains the document elements and metadata defaults. The public route-group layout composes the shared header and footer. Future admin routes can remain outside this group.
 - Properties and Journal render clear no-records states because no property data source or published article records exist yet. Regions lists only the supplied service areas. Contact uses the documented phone and WhatsApp number.
 - Property and journal detail routes remain deferred to Phases 05 and 06. No navigation links point to those routes yet.
-- The public navigation stays visible and wraps into rows on narrow viewports rather than introducing client-side menu state.
+- The public header uses a keyboard-accessible hamburger menu on mobile. Its client-side state is limited to opening and closing the menu; desktop navigation remains visible.
+- `/about` presents confirmed company information and reads the CEO profile from the public leadership table. Profile editing stays in the protected admin area.
+- Public shell labels and fixed navigation wording can be edited in the protected site-content editor. Route destinations and contact numbers remain code-owned.
 - `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass. The production build reports the expected static routes.
 - An HTTP request to `/regions` returned 200. Browser automation timed out during review, and a sequential local development-server route check stalled. Responsive screenshots and keyboard interaction therefore still need a manual browser review.

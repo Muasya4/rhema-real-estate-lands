@@ -1,24 +1,43 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { MobileSiteNavigation } from "@/components/site/mobile-site-navigation";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
-const navigationLinks = [
-  { href: "/", label: "Home" },
-  { href: "/properties", label: "Properties" },
-  { href: "/regions", label: "Regions" },
-  { href: "/journal", label: "Journal" },
-  { href: "/contact", label: "Contact" },
-];
+const navigationRoutes = [
+  { href: "/", contentKey: "global.nav.home" },
+  { href: "/properties", contentKey: "global.nav.properties" },
+  { href: "/regions", contentKey: "global.nav.regions" },
+  { href: "/journal", contentKey: "global.nav.journal" },
+  { href: "/about", contentKey: "global.nav.about" },
+  { href: "/contact", contentKey: "global.nav.contact" },
+] as const;
 
-export function SiteHeader() {
+export function SiteHeader({
+  mobilePreview = false,
+  content,
+}: {
+  mobilePreview?: boolean;
+  content: SiteContent;
+}) {
+  const navigationLinks = navigationRoutes.map(({ href, contentKey }) => ({
+    href,
+    label: content[contentKey],
+  }));
+
   return (
-    <header className="site-header">
+    <header
+      className={`site-header${mobilePreview ? " site-header--mobile-preview" : ""}`}
+    >
       <div className="site-width site-header-layout">
-        <Link className="site-brand" href="/" aria-label="Rhema Real Estates home">
-          <span className="site-brand-name">Rhema</span>
-          <span className="site-brand-description">Real Estates</span>
+        <Link className="site-brand" href="/" aria-label={content["global.homeLinkLabel"]}>
+          <span className="site-brand-name">{content["global.brandName"]}</span>
+          <span className="site-brand-description">{content["global.brandDescriptor"]}</span>
         </Link>
 
-        <nav className="site-navigation" aria-label="Main navigation">
+        <nav
+          aria-label={content["global.mainNavLabel"]}
+          className="site-navigation"
+        >
           {navigationLinks.map(({ href, label }) => (
             <Link
               className={
@@ -36,6 +55,15 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
+        <MobileSiteNavigation
+          defaultOpen={mobilePreview}
+          links={navigationLinks}
+          labels={{
+            open: content["global.menuOpen"],
+            close: content["global.menuClose"],
+          }}
+          navigationLabel={content["global.mainNavLabel"]}
+        />
       </div>
     </header>
   );

@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { getPublicSiteContent } from "@/lib/site-content/data";
 
-export default function JournalArticleNotFound() {
+export default async function JournalArticleNotFound() {
+  const content = await getPublicSiteContent();
+
   return (
     <main className="route-page" id="main-content">
       <div className="site-width">
@@ -9,13 +12,11 @@ export default function JournalArticleNotFound() {
           aria-labelledby="journal-article-not-found-title"
         >
           <h1 id="journal-article-not-found-title">
-            This journal article is not available.
+            {content["journal.notFoundTitle"]}
           </h1>
-          <p>
-            It may have been removed or is not published for public viewing.
-          </p>
+          <p>{content["journal.notFoundCopy"]}</p>
           <Link className="button button--primary-outlined" href="/journal">
-            Return to the journal
+            {content["journal.notFoundLink"]}
           </Link>
         </section>
       </div>

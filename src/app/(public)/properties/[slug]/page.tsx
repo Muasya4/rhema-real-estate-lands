@@ -16,6 +16,8 @@ import {
   formatPropertyPrice,
 } from "@/lib/properties/model";
 import { getPublishedPropertyBySlug } from "@/lib/properties/data";
+import { getPublicSiteContent } from "@/lib/site-content/data";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
 type PropertyDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -27,12 +29,18 @@ export async function generateMetadata({
   params,
 }: PropertyDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getPublishedPropertyBySlug(slug);
+  const [result, content] = await Promise.all([
+    getPublishedPropertyBySlug(slug),
+    getPublicSiteContent(),
+  ]);
 
   if (result.status !== "found") {
     return buildPageMetadata({
-      title: result.status === "not-found" ? "Property not found" : "Property details",
-      description: "This property page is not available.",
+      title:
+        result.status === "not-found"
+          ? content["properties.metaNotFoundTitle"]
+          : content["properties.metaUnavailableTitle"],
+      description: content["properties.metaUnavailableDescription"],
       path: `/properties/${encodeURIComponent(slug)}`,
       noindex: true,
     });
@@ -49,7 +57,7 @@ export async function generateMetadata({
   });
 }
 
-function PropertyDetailError() {
+function PropertyDetailError({ content }: { content: SiteContent }) {
   return (
     <section
       className="route-empty-state property-detail-error"
@@ -57,14 +65,11 @@ function PropertyDetailError() {
       role="alert"
     >
       <h1 className="section-title" id="property-detail-error-title">
-        Property details could not be loaded.
+        {content["properties.errorDetailTitle"]}
       </h1>
-      <p>
-        Contact Rhema to ask about plots in the Nairobi Metropolitan Area,
-        Kiambu, Machakos, Kajiado or Central Kenya.
-      </p>
+      <p>{content["properties.errorDetailCopy"]}</p>
       <Link className="button button--primary-outlined" href="/contact">
-        Contact Rhema
+        {content["properties.errorDetailLink"]}
       </Link>
     </section>
   );
@@ -72,11 +77,13 @@ function PropertyDetailError() {
 
 function PropertyDetailContent({
   property,
+  content,
 }: {
   property: Extract<
     Awaited<ReturnType<typeof getPublishedPropertyBySlug>>,
     { status: "found" }
   >["property"];
+  content: SiteContent;
 }) {
   const siteUrl = getSiteUrl();
   const propertyUrl = siteUrl
@@ -108,7 +115,7 @@ function PropertyDetailContent({
           <JsonLd
             schema={createBreadcrumbListJsonLd([
               {
-                name: "All properties",
+                name: content["properties.allProperties"],
                 url: new URL("/properties", siteUrl).toString(),
               },
               { name: property.title, url: propertyUrl },
@@ -116,9 +123,12 @@ function PropertyDetailContent({
           />
         </>
       ) : null}
-      <nav aria-label="Breadcrumb" className="property-detail-breadcrumb">
+      <nav
+        aria-label={content["properties.breadcrumbLabel"]}
+        className="property-detail-breadcrumb"
+      >
         <Link className="text-link" href="/properties">
-          All properties
+          {content["properties.allProperties"]}
         </Link>
       </nav>
 
@@ -126,15 +136,20 @@ function PropertyDetailContent({
         <p className="property-detail-location">{property.location}</p>
         <h1 className="route-title">{property.title}</h1>
         <div className="property-detail-markers">
-          {property.status ? <StatusBadge status={property.status} /> : null}
+          {property.status ? (
+            <StatusBadge content={content} status={property.status} />
+          ) : null}
           <span className="property-detail-price">
-            {formatPropertyPrice(property.priceKes)}
+            {formatPropertyPrice(
+              property.priceKes,
+              content["properties.priceOnRequest"],
+            )}
           </span>
         </div>
       </header>
 
       <section
-        aria-label={`${property.title} images`}
+        aria-label={`${property.title} ${content["properties.galleryLabelSuffix"]}`}
         className={`property-detail-gallery${property.images.length === 1 ? " property-detail-gallery--single" : ""}`}
       >
         {property.images.map((image, index) => (
@@ -160,7 +175,7 @@ function PropertyDetailContent({
                   aria-hidden="true"
                   className="property-detail-image-label"
                 >
-                  Illustration placeholder
+                  {content["properties.detailImagePlaceholder"]}
                 </span>
               ) : null}
             </div>
@@ -174,7 +189,7 @@ function PropertyDetailContent({
           className="property-detail-description"
         >
           <h2 className="section-title" id="property-description-title">
-            About this property
+            {content["properties.detailAboutTitle"]}
           </h2>
           <p className="property-detail-description-text">
             {property.description}
@@ -186,28 +201,33 @@ function PropertyDetailContent({
           className="property-detail-facts"
         >
           <h2 className="section-title" id="property-facts-title">
-            Property details
+            {content["properties.detailFactsTitle"]}
           </h2>
           <dl className="property-detail-facts-list">
             <div>
-              <dt>Location</dt>
+              <dt>{content["properties.detailLocationLabel"]}</dt>
               <dd>{property.location}</dd>
             </div>
             {property.plotSize ? (
               <div>
-                <dt>Plot size</dt>
+                <dt>{content["properties.detailSizeLabel"]}</dt>
                 <dd>{property.plotSize}</dd>
               </div>
             ) : null}
             <div>
-              <dt>Price</dt>
-              <dd>{formatPropertyPrice(property.priceKes)}</dd>
+              <dt>{content["properties.detailPriceLabel"]}</dt>
+              <dd>
+                {formatPropertyPrice(
+                  property.priceKes,
+                  content["properties.priceOnRequest"],
+                )}
+              </dd>
             </div>
             {property.status ? (
               <div>
-                <dt>Status</dt>
+                <dt>{content["properties.detailStatusLabel"]}</dt>
                 <dd>
-                  <StatusBadge status={property.status} />
+                  <StatusBadge content={content} status={property.status} />
                 </dd>
               </div>
             ) : null}
@@ -222,14 +242,12 @@ function PropertyDetailContent({
       >
         <div className="property-detail-inquiry-intro">
           <h2 className="section-title" id="property-inquiry-title">
-            Ask Rhema about {property.title}.
+            {content["properties.inquiryTitlePrefix"]} {property.title}.
           </h2>
-          <p>
-            Send a private inquiry about this property. Rhema will receive the
-            property reference with your message.
-          </p>
+          <p>{content["properties.inquiryCopy"]}</p>
         </div>
         <InquiryForm
+          content={content}
           propertyId={property.id}
           siteKey={formConfigured ? siteKey : null}
         />
@@ -243,7 +261,10 @@ export default async function PropertyDetailPage({
 }: PropertyDetailPageProps) {
   await connection();
   const { slug } = await params;
-  const result = await getPublishedPropertyBySlug(slug);
+  const [result, content] = await Promise.all([
+    getPublishedPropertyBySlug(slug),
+    getPublicSiteContent(),
+  ]);
 
   if (result.status === "not-found") {
     notFound();
@@ -253,9 +274,9 @@ export default async function PropertyDetailPage({
     <main className="route-page" id="main-content">
       <div className="site-width">
         {result.status === "error" ? (
-          <PropertyDetailError />
+          <PropertyDetailError content={content} />
         ) : (
-          <PropertyDetailContent property={result.property} />
+          <PropertyDetailContent content={content} property={result.property} />
         )}
       </div>
     </main>

@@ -36,6 +36,18 @@ async function AdminContent() {
       >
         Manage regions
       </Link>
+      <Link
+        className="button button--primary-outlined admin-dashboard-link"
+        href="/admin/about"
+      >
+        Edit About page
+      </Link>
+      <Link
+        className="button button--primary-outlined admin-dashboard-link"
+        href="/admin/content"
+      >
+        Edit website wording
+      </Link>
       <form action={signOutAdmin}>
         <button className="button button--primary-outlined" type="submit">
           Sign out

@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { getPublicSiteContent } from "@/lib/site-content/data";
 
-export default function PropertyNotFound() {
+export default async function PropertyNotFound() {
+  const content = await getPublicSiteContent();
+
   return (
     <main className="route-page" id="main-content">
       <div className="site-width">
@@ -9,14 +12,11 @@ export default function PropertyNotFound() {
           aria-labelledby="property-not-found-title"
         >
           <h1 className="section-title" id="property-not-found-title">
-            This property page is not available.
+            {content["properties.notFoundTitle"]}
           </h1>
-          <p>
-            The property may have been removed or is not published for public
-            viewing.
-          </p>
+          <p>{content["properties.notFoundCopy"]}</p>
           <Link className="button button--primary-outlined" href="/properties">
-            View properties
+            {content["properties.notFoundLink"]}
           </Link>
         </section>
       </div>

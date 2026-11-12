@@ -12,6 +12,8 @@ import {
 import { getPublishedJournalPostBySlug } from "@/lib/journal/data";
 import { createBreadcrumbListJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMetadata, getSiteUrl } from "@/lib/seo/site-url";
+import { getPublicSiteContent } from "@/lib/site-content/data";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
 type JournalArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -23,12 +25,18 @@ export async function generateMetadata({
   params,
 }: JournalArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getPublishedJournalPostBySlug(slug);
+  const [result, content] = await Promise.all([
+    getPublishedJournalPostBySlug(slug),
+    getPublicSiteContent(),
+  ]);
 
   if (result.status !== "found") {
     return buildPageMetadata({
-      title: result.status === "not-found" ? "Article not found" : "Journal article",
-      description: "This journal article is not available.",
+      title:
+        result.status === "not-found"
+          ? content["journal.articleNotFoundTitle"]
+          : content["journal.metaTitle"],
+      description: content["journal.articleUnavailableDescription"],
       path: `/journal/${encodeURIComponent(slug)}`,
       noindex: true,
     });
@@ -44,7 +52,7 @@ export async function generateMetadata({
   });
 }
 
-function JournalArticleError() {
+function JournalArticleError({ content }: { content: SiteContent }) {
   return (
     <section
       className="route-empty-state journal-article-error"
@@ -52,14 +60,11 @@ function JournalArticleError() {
       role="alert"
     >
       <h1 id="journal-article-error-title">
-        This journal article could not be loaded.
+        {content["journal.articleErrorTitle"]}
       </h1>
-      <p>
-        Contact Rhema with questions about plots in the areas where it sells
-        land.
-      </p>
+      <p>{content["journal.articleErrorCopy"]}</p>
       <Link className="button button--primary-outlined" href="/journal">
-        Return to the journal
+        {content["journal.articleBackLink"]}
       </Link>
     </section>
   );
@@ -70,7 +75,10 @@ export default async function JournalArticlePage({
 }: JournalArticlePageProps) {
   await connection();
   const { slug } = await params;
-  const result = await getPublishedJournalPostBySlug(slug);
+  const [result, content] = await Promise.all([
+    getPublishedJournalPostBySlug(slug),
+    getPublicSiteContent(),
+  ]);
 
   if (result.status === "not-found") {
     notFound();
@@ -80,7 +88,7 @@ export default async function JournalArticlePage({
     return (
       <main className="route-page" id="main-content">
         <div className="site-width">
-          <JournalArticleError />
+          <JournalArticleError content={content} />
         </div>
       </main>
     );
@@ -99,7 +107,7 @@ export default async function JournalArticlePage({
           <JsonLd
             schema={createBreadcrumbListJsonLd([
               {
-                name: "All journal articles",
+                name: content["journal.allArticles"],
                 url: new URL("/journal", siteUrl).toString(),
               },
               { name: post.title, url: articleUrl },
@@ -107,9 +115,12 @@ export default async function JournalArticlePage({
           />
         ) : null}
         <article className="journal-article">
-          <nav aria-label="Breadcrumb" className="journal-article-breadcrumb">
+          <nav
+            aria-label={content["journal.breadcrumbLabel"]}
+            className="journal-article-breadcrumb"
+          >
             <Link className="text-link" href="/journal">
-              All journal articles
+              {content["journal.allArticles"]}
             </Link>
           </nav>
 

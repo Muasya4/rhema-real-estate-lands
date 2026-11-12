@@ -1,3 +1,8 @@
+import {
+  getDefaultSiteContent,
+  type SiteContent,
+} from "../site-content/defaults";
+
 export const inquiryFieldLimits = {
   name: 120,
   email: 254,
@@ -31,6 +36,7 @@ export function isUuid(value: string): boolean {
 
 export function validateInquiryForm(
   formData: FormData,
+  content: SiteContent = getDefaultSiteContent(),
 ): InquiryValidationResult {
   const name = getStringField(formData, "name") ?? "";
   const email = getStringField(formData, "email") ?? "";
@@ -40,40 +46,40 @@ export function validateInquiryForm(
   const fieldErrors: InquiryFieldErrors = {};
 
   if (!name) {
-    fieldErrors.name = "Enter your name.";
+    fieldErrors.name = content["inquiry.nameRequired"];
   } else if (name.length > inquiryFieldLimits.name) {
-    fieldErrors.name = "Use 120 characters or fewer.";
+    fieldErrors.name = content["inquiry.nameTooLong"];
   }
 
   if (!email) {
-    fieldErrors.email = "Enter your email address.";
+    fieldErrors.email = content["inquiry.emailRequired"];
   } else if (
     email.length > inquiryFieldLimits.email ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   ) {
-    fieldErrors.email = "Enter a valid email address.";
+    fieldErrors.email = content["inquiry.emailInvalid"];
   }
 
   const phoneDigits = phone.replace(/\D/g, "");
   if (!phone) {
-    fieldErrors.phone = "Enter your phone number.";
+    fieldErrors.phone = content["inquiry.phoneRequired"];
   } else if (
     phone.length > inquiryFieldLimits.phone ||
     !/^[+\d().\-\s]+$/.test(phone) ||
     phoneDigits.length < 7 ||
     phoneDigits.length > 15
   ) {
-    fieldErrors.phone = "Enter a valid phone number.";
+    fieldErrors.phone = content["inquiry.phoneInvalid"];
   }
 
   if (!message) {
-    fieldErrors.message = "Enter a message.";
+    fieldErrors.message = content["inquiry.messageRequired"];
   } else if (message.length > inquiryFieldLimits.message) {
-    fieldErrors.message = "Use 5,000 characters or fewer.";
+    fieldErrors.message = content["inquiry.messageTooLong"];
   }
 
   if (rawPropertyId && !isUuid(rawPropertyId)) {
-    fieldErrors.propertyId = "This property reference is not valid.";
+    fieldErrors.propertyId = content["inquiry.propertyIdInvalid"];
   }
 
   if (Object.keys(fieldErrors).length > 0) {

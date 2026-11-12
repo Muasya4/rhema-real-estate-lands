@@ -7,13 +7,17 @@ import {
   getPublishedJournalPosts,
   journalPageSize,
 } from "@/lib/journal/data";
+import { getPublicSiteContent } from "@/lib/site-content/data";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
-export const metadata = buildPageMetadata({
-  title: "Journal",
-  description:
-    "Articles about land and the areas where Rhema Real Estates sells plots in Kenya.",
-  path: "/journal",
-});
+export async function generateMetadata() {
+  const content = await getPublicSiteContent();
+  return buildPageMetadata({
+    title: content["journal.metaTitle"],
+    description: content["journal.metaDescription"],
+    path: "/journal",
+  });
+}
 
 type JournalPageProps = {
   searchParams: Promise<{ page?: string | string[] }>;
@@ -28,10 +32,10 @@ function parsePageNumber(value: string | string[] | undefined): number {
   return Number.isSafeInteger(page) ? page : 1;
 }
 
-function JournalIndexFallback() {
+function JournalIndexFallback({ content }: { content: SiteContent }) {
   return (
     <section className="journal-loading" aria-live="polite">
-      <p>Loading Rhema&apos;s published journal articles.</p>
+      <p>{content["journal.loading"]}</p>
     </section>
   );
 }
@@ -39,28 +43,36 @@ function JournalIndexFallback() {
 function JournalPagination({
   page,
   pageCount,
+  content,
 }: {
   page: number;
   pageCount: number;
+  content: SiteContent;
 }) {
   if (pageCount <= 1) {
     return null;
   }
 
   return (
-    <nav aria-label="Journal pages" className="journal-pagination">
+    <nav
+      aria-label={content["journal.paginationLabel"]}
+      className="journal-pagination"
+    >
       {page > 1 ? (
         <Link href={page === 2 ? "/journal" : `/journal?page=${page - 1}`}>
-          Newer articles
+          {content["journal.newerArticles"]}
         </Link>
       ) : (
         <span aria-hidden="true" />
       )}
       <span aria-current="page">
-        Page {page} of {pageCount}
+        {content["journal.pageLabel"]} {page} {content["journal.pageOfLabel"]}{" "}
+        {pageCount}
       </span>
       {page < pageCount ? (
-        <Link href={`/journal?page=${page + 1}`}>Older articles</Link>
+        <Link href={`/journal?page=${page + 1}`}>
+          {content["journal.olderArticles"]}
+        </Link>
       ) : (
         <span aria-hidden="true" />
       )}
@@ -68,7 +80,10 @@ function JournalPagination({
   );
 }
 
-async function JournalPageContent({ searchParams }: JournalPageProps) {
+async function JournalPageContent({
+  searchParams,
+  content,
+}: JournalPageProps & { content: SiteContent }) {
   const { page: rawPage } = await searchParams;
   const page = parsePageNumber(rawPage);
   const result = await getPublishedJournalPosts(page, journalPageSize);
@@ -81,14 +96,11 @@ async function JournalPageContent({ searchParams }: JournalPageProps) {
         role="alert"
       >
         <h2 id="journal-error-title">
-          Rhema&apos;s journal articles could not be loaded.
+          {content["journal.errorTitle"]}
         </h2>
-        <p>
-          Contact Rhema with questions about plots in the Nairobi Metropolitan
-          Area, Kiambu, Machakos, Kajiado or Central Kenya.
-        </p>
+        <p>{content["journal.errorCopy"]}</p>
         <Link className="button button--primary-outlined" href="/contact">
-          Contact Rhema
+          {content["journal.errorLink"]}
         </Link>
       </section>
     );
@@ -101,14 +113,11 @@ async function JournalPageContent({ searchParams }: JournalPageProps) {
         aria-labelledby="journal-empty-title"
       >
         <h2 id="journal-empty-title">
-          There are no published journal articles yet.
+          {content["journal.emptyTitle"]}
         </h2>
-        <p>
-          Rhema&apos;s journal will feature articles about the areas where it
-          sells plots.
-        </p>
+        <p>{content["journal.emptyCopy"]}</p>
         <Link className="button button--primary-outlined" href="/contact">
-          Contact Rhema
+          {content["journal.emptyLink"]}
         </Link>
       </section>
     );
@@ -128,10 +137,14 @@ async function JournalPageContent({ searchParams }: JournalPageProps) {
           aria-labelledby="journal-page-empty-title"
         >
           <h2 id="journal-page-empty-title">
-            There are no journal articles on this page.
+            {content["journal.pageEmptyTitle"]}
           </h2>
         </section>
-        <JournalPagination page={page} pageCount={result.pageCount} />
+        <JournalPagination
+          content={content}
+          page={page}
+          pageCount={result.pageCount}
+        />
       </>
     );
   }
@@ -139,31 +152,34 @@ async function JournalPageContent({ searchParams }: JournalPageProps) {
   return (
     <>
       <section
-        aria-label="Published journal articles"
+        aria-label={content["journal.listLabel"]}
         className="journal-listing-grid"
       >
         {result.posts.map((post) => (
-          <JournalCard key={post.id} post={post} />
+          <JournalCard content={content} key={post.id} post={post} />
         ))}
       </section>
-      <JournalPagination page={page} pageCount={result.pageCount} />
+      <JournalPagination
+        content={content}
+        page={page}
+        pageCount={result.pageCount}
+      />
     </>
   );
 }
 
-export default function JournalPage({ searchParams }: JournalPageProps) {
+export default async function JournalPage({ searchParams }: JournalPageProps) {
+  const content = await getPublicSiteContent();
+
   return (
     <main className="route-page" id="main-content">
       <div className="site-width">
         <header className="route-intro">
-          <h1 className="route-title">Notes on land and place.</h1>
-          <p className="route-description">
-            Articles about land and the areas where Rhema Real Estates sells
-            plots in Kenya.
-          </p>
+          <h1 className="route-title">{content["journal.title"]}</h1>
+          <p className="route-description">{content["journal.intro"]}</p>
         </header>
-        <Suspense fallback={<JournalIndexFallback />}>
-          <JournalPageContent searchParams={searchParams} />
+        <Suspense fallback={<JournalIndexFallback content={content} />}>
+          <JournalPageContent content={content} searchParams={searchParams} />
         </Suspense>
       </div>
     </main>

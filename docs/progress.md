@@ -4,12 +4,22 @@
 
 Created the ordered implementation specs in `docs/specs/` for the design system, shared shell, schema, public property and journal pages, inquiries, admin authentication and management, and SEO. The specifications define scope; implementation status is recorded below.
 
+## Critical next task: enable production inquiry submissions
+
+**Do this first next session.** The site is live at `https://www.rhemarealestates.com`, Vercel can read the existing Supabase project, and admin sign-in has been confirmed. Public inquiry submission is still unavailable until the following values are configured in the Vercel **Production** environment:
+
+- `SUPABASE_SECRET_KEY`
+- `TURNSTILE_SECRET_KEY`
+- `TURNSTILE_SITE_KEY`
+
+Set these directly in Vercel; never paste secret values into chat, Git, or project documentation. Redeploy after saving. Then submit one synthetic inquiry with the owner's approval and verify it appears in the admin inquiry view. Keep inquiry table access admin-only; do not enable anonymous direct inserts. See `prompts/critical-live-inquiry-setup.md`.
+
 Decisions and issues to track before related implementation:
 
 - **Resolved in Phase 03:** The original 11 service areas, now stored as admin-managed regions with stable slugs. Property status nullability, nullable KES price, property/blog publication semantics, image record shape, and image bucket access policies are also defined.
 - **Phase 09 implementation:** The admin editor enforces 5 MiB per image and JPEG, PNG, or WebP. Apply the same bucket-level limits in the Supabase Dashboard and verify them in staging.
-- **Deferred:** Add public inquiry insertion only alongside abuse controls in Phase 07.
-- **Unresolved:** Configure the production site origin and confirm any LocalBusiness facts beyond the documented phone number before adding structured data.
+- **Phase 07:** Public inquiry submissions use the validated server action, Turnstile, and honeypot. Direct anonymous writes to the inquiries table remain disabled.
+- **Resolved for Phase 11:** The canonical origin is `https://www.rhemarealestates.com`. The domain is connected to Vercel, Auth URLs use the `www` origin, and live canonical and sitemap URLs were checked.
 - **Unresolved:** The Phase 03 and admin-managed-regions migrations and pgTAP tests are present but the pgTAP suite still needs to run against Supabase.
 - **Resolved for now:** Cormorant Garamond did not download during build; the design system uses a system serif stack. Self-hosting a font remains a pre-launch improvement, not a blocker for the current page.
 
@@ -154,7 +164,7 @@ Validation completed:
 
 Implemented a general inquiry form on `/contact`. The form validates input in a server action, checks any supplied property ID against published properties, verifies Cloudflare Turnstile server-side, uses a honeypot, and inserts through a server-only Supabase secret client. Anonymous direct inquiry-table writes remain disabled; no migration or RLS policy was changed. The form retains phone and WhatsApp alternatives and provides pending, success, and failure states.
 
-Added focused Node tests for form validation, mocked general/property-specific inserts, unpublished-property rejection, Turnstile failure and replay, honeypot handling, and insert errors. No hosted inquiry data was created.
+Added focused Node tests for form validation, mocked general/property-specific inserts, unpublished-property rejection, Turnstile failure and replay, honeypot handling, and insert errors. One owner-confirmed test inquiry is present in the active Supabase project and was left untouched.
 
 Validation completed:
 
@@ -164,7 +174,7 @@ Validation completed:
 - `npm run build`; `/contact` is statically prerendered.
 - Responsive viewport checks at 375px, 768px, and 1440px found no horizontal overflow.
 
-Live Turnstile verification and a hosted database insert are not tested because the local secret and Turnstile keys are not configured. The server action fails closed until those values are set in ignored `.env.local`. Do not put secrets in `.env.example` or share them in chat.
+**Critical production blocker:** Live Turnstile verification and a hosted inquiry insert have not been tested. The production Vercel environment still needs `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY`. The action fails closed until these are set. Configure them in Vercel Production, redeploy, then verify using one synthetic inquiry with owner approval. Do not put secrets in `.env.example` or share them in chat.
 
 ## Phase 08: Admin authentication
 
@@ -258,7 +268,7 @@ Validation completed:
 
 Known issues:
 
-- **Pending production origin:** The user has not selected the production site origin. Set `SITE_URL` to the exact HTTPS origin before the production build/deployment and verify the resulting canonical and sitemap URLs. `https://rhema.test` is a validation-only value.
+- **Resolved production origin:** `SITE_URL` is set for `https://www.rhemarealestates.com`; the production canonical and sitemap URLs were verified on the live site.
 - **Pending browser review:** The browser automation connection timed out. Visual checks at 375px, 768px, and 1440px and rendered metadata checks on published property/article records remain pending. No live published records were present in the local sitemap smoke check.
 
 
@@ -267,11 +277,106 @@ Known issues:
 - **Font loading:** Cormorant Garamond failed to download during build, falling back to system serif. Fix: self-host with `next/font/local` before launch.
 - **Phase 02 browser review:** Automated browser connection timed out during this pass. Production build and static route generation passed, and `/regions` returned HTTP 200. Mobile/tablet screenshots and keyboard review remain to be done manually.
 - **Phase 03 Supabase validation:** The user's first test-project SQL run failed because the migration tried to change ownership-managed Storage objects. The migration now avoids those operations. Application schema passed on a disposable PostgreSQL compatibility harness before this correction. The corrected file and Dashboard Storage setup still need verification on a clean temporary project; no client DB was touched.
-- **Development Supabase connection:** A limited anonymous read against the development project succeeded and returned zero property rows. The query did not test draft visibility because there are no records. Keep the project's URL and publishable key in ignored `.env.local`; the shareable `.env.example` is blank. Do not use the development project as production.
-- **Phase 07 live inquiry test:** The form and server action are implemented and automated tests pass, but live Turnstile verification and a hosted insert remain untested until development-only Supabase and Turnstile values are configured in `.env.local`. Do not grant anonymous table writes to work around this.
+- **Production Supabase plan:** The existing active Free project is being used by the live site. Supabase may pause Free projects after inactivity, and downloadable database backups are not included. The owner has chosen to remain on Free for now.
+- **CRITICAL, next session first: Phase 07 live inquiry setup:** The public site reads regions from Supabase and admin sign-in works, but public inquiry submission remains unavailable until `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY` are added to Vercel Production. Redeploy, then verify Turnstile and one approved synthetic inquiry. Keep direct anonymous inquiry-table writes disabled.
 - **Phase 05 not-found status:** Accepted limitation. Unknown and unpublished property slugs render the correct not-found UI with `noindex`, but streamed responses return HTTP 200 under Next.js Cache Components. The user chose to keep streaming instead of changing the broader rendering strategy.
 - **Phase 08 live Auth setup:** `AUTH_SITE_URL` is intentionally blank in `.env.example`. Production SMTP, the Auth callback allowlist, sign-up/confirmation/password policies, rate limits, CAPTCHA/abuse protection, trusted admin provisioning, and live staging flows still require owner setup and verification. No live recovery email or account test was performed.
 - **Phase 08 password-only decision:** The user declined MFA. This is less resistant to credential theft than MFA and should be treated as an accepted risk, not as an equivalent security control.
 - **Development dependency audit:** The full `npm audit` reports eight moderate advisories in the ESLint/TypeScript linting dependency chain. `npm audit --omit=dev` reports zero production vulnerabilities. The suggested automatic fix would downgrade `eslint-config-next` to 15.5.29, so no forced or unrelated dependency change was made; update to a tested compatible release before relying on the lint toolchain in CI.
 - **Phase 09 staging:** The implementation is locally validated, but the development/staging Storage bucket limits and policies and live admin property workflows still need owner setup and verification. No hosted property or Storage data was changed.
 - **Managed regions database verification:** The migration and core RLS behavior passed in a disposable local PostgreSQL 18 harness with pre-existing property data. The expanded pgTAP suite still needs a Supabase-compatible run. No hosted schema or data was changed.
+- **About page and CEO profile:** The page and protected editor are implemented locally. The leadership migration and RLS passed an isolated PostgreSQL 18 smoke test. The pgTAP suite, authenticated UI/Storage workflows, and responsive browser review remain pending. The migration has not been applied to hosted Supabase.
+- **Resolved for homepage depth validation:** An initial local build without `SITE_URL` exited because the required canonical origin was missing. The build passed with the reserved test origin `https://rhema.test`; no application configuration changed.
+- **Pending direct homepage browser review:** A fresh local production-preview request for `/` ended with `ERR_INCOMPLETE_CHUNKED_ENCODING`. The generated HTML contains the homepage class, and the compiled styles were checked in a browser using the homepage markup fixture. A complete direct-route screenshot remains pending.
+
+## Homepage and design-system depth
+
+Applied the new reference's section depth to the homepage and `/design-system`, using existing tokens and leaving both font stacks, all copy, routes, and data behavior unchanged. The homepage now uses a layered hero image frame, a raised portfolio panel, and individually surfaced region tiles. The showcase demonstrates the olive feature band and muted palette section.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `SITE_URL=https://rhema.test npm run build`
+- Production browser review of `/` and `/design-system` at 375px, 768px, and 1440px found no horizontal overflow.
+- Browser-computed heading and body font families match the existing serif and Geist stacks.
+- Local production server returned HTTP 200 for `/`.
+
+## Deep green and public-page depth
+
+Added `--color-forest` (`#193d32`), sampled from the deep green feature band in the new design reference. The token is now documented in the design-system color inventory and used by shared public navigation/footer states, the homepage hero and contact band, public route introductions and detail headers, region surfaces, and inquiry panels. Added a forest button specimen and a visible hover/focus navigation example to `/design-system`.
+
+Removed the offset olive frame around the homepage hero photo. Existing type stacks, page copy, routes, data behavior, and admin surfaces remain unchanged.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm test`: 109 tests passed.
+- `npm run lint`
+- `SITE_URL=https://rhema.test npm run build`
+- Browser review of home, design system, properties, regions, journal, and contact at 375px, 768px, and 1440px showed no horizontal overflow.
+- Browser checks confirmed the forest token, hero and route-intro colors, removed image-frame padding, and unchanged serif/sans font stacks.
+- The production browser automation experienced intermittent local navigation errors. Direct HTTP requests to the six reviewed public routes each returned 200; browser layout checks succeeded on every route.
+
+## Homepage hero, olive accents, and footer contrast
+
+Reduced the homepage hero's padding, title scale, column gap, and image height. The shared header divider is now hidden only above the homepage, with a token-based gap before the hero. The existing soft-olive headline highlight is reinforced by a small location marker; olive is used for small image-label and enquiry-step details. The design-system palette guidance now documents olive for light-surface accents and soft olive for highlighted wording on forest.
+
+Corrected the footer foreground rule so the brand descriptor, navigation, and phone text remain white over the forest background. Existing font families and customer-facing page copy remain unchanged; non-home route headers are unaffected.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test` passed.
+- `SITE_URL=https://rhema.test npm run build`
+- Browser layout checks with the compiled CSS and homepage markup fixture at 1440×900, 768×900, and 375×812 found no horizontal overflow. The full hero was visible at 1440×900 and 768×900.
+- Browser-computed title highlight color was soft olive (`#e5e9e1`); footer text and brand descriptor were white against forest (`#193d32`).
+- `/design-system` rendered the olive role guidance and showed no horizontal overflow at all three viewport widths.
+- A fresh direct homepage request in the isolated local production preview ended with `ERR_INCOMPLETE_CHUNKED_ENCODING`; see Known issues above. The responsive hero check used the compiled stylesheet on a browser fixture rather than a complete homepage response.
+
+## Mobile navigation
+
+Replaced the public header's wrapping links on mobile with a compact menu control and an expandable route list. The public header remains server-rendered; menu state, Escape handling, and focus restoration are isolated in a client component. The panel closes after route selection, is inert when closed, and disables its transitions for reduced-motion preferences. Added an interactive mobile-header specimen to `/design-system`.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `SITE_URL=https://rhema.test npm run build`
+- The production preview returned HTTP 200 for `/design-system`.
+- The build completed successfully, but took about 4.8 minutes to compile and 6.2 minutes for its TypeScript step while lint and a separate type check were also running.
+
+Still pending: the integrated browser automation could not connect to its CDP endpoint. Screenshots, menu interaction, and viewport-specific checks at 375px, 768px, and 1440px could not be completed.
+
+## About page and CEO profile
+
+Added `/about` with company-specific information and a profile section for Evans, Chief Executive Officer. Added the protected `/admin/about` editor for the confirmed name, title, email, optional biography, and portrait. Portrait uploads reuse the existing public-read/admin-write `property-images` bucket. The local leadership migration seeds `evans@rhemarealestates.com`, permits public reads, and restricts updates to admins.
+
+Validation completed:
+
+- `npm test`: 120 tests passed.
+- `npx tsc --noEmit`
+- `npm run lint`
+- `SITE_URL=https://rhema.test npm run build`; `/about` and `/admin/about` are included in the production route output.
+- Applied the leadership migration to an isolated local PostgreSQL 18 harness. Verified the seed, public read, no anonymous update privilege, blocked non-admin update, and successful admin update.
+- `git diff --check`
+
+Still pending: the pgTAP suite and authenticated editor/Storage workflows need a Supabase-compatible test project. The migration has not been applied to hosted Supabase. Responsive browser review at 375px, 768px, and 1440px remains pending because integrated browser automation timed out; local SSR without the migration reported the missing leadership table.
+
+## Public site content management
+
+Added the protected `/admin/content` editor for fixed public-site wording. The fields are prefilled from saved overrides or the version-controlled copy defaults. Admins can save immediately, restore one section, or confirm a full reset. Property, region, Journal, and CEO records remain in their existing editors. Editable text cannot change routes, contact destinations, metadata origins, structured business facts, or security behavior.
+
+Wired the shared shell, public pages, forms, metadata fallbacks, and public record labels to the shared content reader. Added a `site_content` migration with public reads and admin-only writes, plus model, action, and pgTAP coverage.
+
+Validation completed:
+
+- `npm test`: 133 tests passed.
+- `npx tsc --noEmit`
+- `npm run lint`
+- `SITE_URL=https://rhema.test npm run build`; all 29 static-generation work units completed. The local database does not have `site_content`, so build-time reads logged `PGRST205` and used the version-controlled defaults.
+- `git diff --check`
+- The local homepage was readable in the app preview at its current 1200px viewport. Integrated browser automation timed out, so responsive screenshots at 375px, 768px, and 1440px and authenticated editor interaction remain unverified.
+
+Still pending: run the pgTAP suite and authenticated save/reset checks against a Supabase-compatible test project. The migration has not been applied to hosted Supabase, and no live content writes were made.

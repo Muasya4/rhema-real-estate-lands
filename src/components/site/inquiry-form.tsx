@@ -5,6 +5,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { submitInquiry } from "@/lib/inquiries/actions";
 import type { InquiryActionState } from "@/lib/inquiries/submission";
 import { inquiryFieldLimits } from "@/lib/inquiries/validation";
+import type { SiteContent } from "@/lib/site-content/defaults";
 
 type TurnstileOptions = {
   action: string;
@@ -32,9 +33,11 @@ const initialState: InquiryActionState = {
 };
 
 export function InquiryForm({
+  content,
   propertyId = "",
   siteKey,
 }: {
+  content: SiteContent;
   propertyId?: string;
   siteKey: string | null;
 }) {
@@ -100,8 +103,7 @@ export function InquiryForm({
   if (!siteKey) {
     return (
       <p className="inquiry-form-notice" role="status">
-        The inquiry form is not available yet. Call or WhatsApp Rhema to ask
-        about land in its service areas.
+        {content["inquiry.unavailable"]}
       </p>
     );
   }
@@ -110,6 +112,7 @@ export function InquiryForm({
 
   return (
     <form
+      aria-label={content["contact.designationLabel"]}
       action={formAction}
       className="inquiry-form"
       noValidate
@@ -121,7 +124,7 @@ export function InquiryForm({
       <div className="field-grid">
         <div className="field">
           <label className="field-label" htmlFor="inquiry-name">
-            Name
+            {content["inquiry.nameLabel"]}
           </label>
           <input
             aria-describedby={fieldErrors.name ? "inquiry-name-error" : undefined}
@@ -142,7 +145,7 @@ export function InquiryForm({
 
         <div className="field">
           <label className="field-label" htmlFor="inquiry-email">
-            Email
+            {content["inquiry.emailLabel"]}
           </label>
           <input
             aria-describedby={
@@ -166,7 +169,7 @@ export function InquiryForm({
 
         <div className="field">
           <label className="field-label" htmlFor="inquiry-phone">
-            Phone
+            {content["inquiry.phoneLabel"]}
           </label>
           <input
             aria-describedby={
@@ -190,7 +193,7 @@ export function InquiryForm({
 
         <div className="field inquiry-message-field">
           <label className="field-label" htmlFor="inquiry-message">
-            Message
+            {content["inquiry.messageLabel"]}
           </label>
           <textarea
             aria-describedby={
@@ -212,9 +215,20 @@ export function InquiryForm({
         </div>
       </div>
 
+      {fieldErrors.propertyId ? (
+        <p
+          className="inquiry-field-error"
+          id="inquiry-property-error"
+          role="alert"
+        >
+          {fieldErrors.propertyId}
+        </p>
+      ) : null}
       <input name="propertyId" type="hidden" value={propertyId} />
       <div aria-hidden="true" className="inquiry-honeypot">
-        <label htmlFor="inquiry-website">Leave this field empty</label>
+        <label htmlFor="inquiry-website">
+          {content["inquiry.honeypotLabel"]}
+        </label>
         <input
           autoComplete="off"
           id="inquiry-website"
@@ -226,7 +240,7 @@ export function InquiryForm({
 
       <div className="inquiry-security">
         <p className="field-label" id="inquiry-security-label">
-          Security check
+          {content["inquiry.securityLabel"]}
         </p>
         <Script
           onError={() => setWidgetError(true)}
@@ -246,7 +260,7 @@ export function InquiryForm({
         />
         <p aria-live="polite" className="inquiry-field-error">
           {widgetError
-            ? "The security check did not load. Please reload or contact Rhema."
+            ? content["inquiry.securityError"]
             : ""}
         </p>
       </div>
@@ -272,7 +286,7 @@ export function InquiryForm({
         }
         type="submit"
       >
-        {pending ? "Sending..." : "Send inquiry"}
+        {pending ? content["inquiry.sending"] : content["inquiry.submit"]}
       </button>
     </form>
   );

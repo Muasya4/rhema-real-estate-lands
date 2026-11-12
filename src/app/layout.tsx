@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { getSiteUrl } from "@/lib/seo/site-url";
+import { getPublicSiteContent } from "@/lib/site-content/data";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -8,15 +9,18 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: getSiteUrl() ?? undefined,
-  title: {
-    default: "Rhema Real Estates | Land in Kenya",
-    template: "%s | Rhema Real Estates",
-  },
-  description:
-    "Rhema Real Estates sells plots across the Nairobi Metropolitan Area, Kiambu, Machakos, Kajiado and Central Kenya.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getPublicSiteContent();
+
+  return {
+    metadataBase: getSiteUrl() ?? undefined,
+    title: {
+      default: content["site.metaTitle"],
+      template: "%s | Rhema Real Estates",
+    },
+    description: content["site.metaDescription"],
+  };
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

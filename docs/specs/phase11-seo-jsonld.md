@@ -51,6 +51,7 @@ Inspect rendered head tags for home, portfolio, region, property, journal, and c
 - Added `LocalBusiness` JSON-LD using the documented business name and phone, `Place` and visible-route breadcrumbs for published property pages, and visible-route breadcrumbs for published journal articles.
 - Added a public-only `/sitemap.xml` and `/robots.txt`. Robots allows crawling so crawlers can observe the existing admin `noindex, nofollow` metadata.
 - Marked the internal `/design-system` route `noindex, nofollow` and kept it out of the sitemap.
+- Static public-route titles and descriptions now read from the protected site-content editor. Canonical origins, fixed business identity in structured data, and publication visibility remain code-controlled.
 - Automated validation passed: 109 tests, TypeScript, lint, and production build. The build used `https://rhema.test` only as a temporary test origin.
 - Local smoke checks returned HTTP 200 for `/contact`, `/design-system`, `/robots.txt`, and `/sitemap.xml`; the contact response contained its canonical/social metadata and business JSON-LD, and the design-system response contained `noindex, nofollow`. The sitemap included public static paths only because no published property or article records were returned in the local check.
 - Pending: the production origin has not been selected, so production canonical and sitemap URLs cannot yet be verified. The browser automation endpoint did not connect; visual checks at 375px, 768px, and 1440px remain pending.

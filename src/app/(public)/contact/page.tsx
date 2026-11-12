@@ -1,18 +1,22 @@
 import { ArrowUpRight, MessageCircle, Phone } from "lucide-react";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { buildPageMetadata } from "@/lib/seo/site-url";
+import { getPublicSiteContent } from "@/lib/site-content/data";
 
-export const metadata = buildPageMetadata({
-  title: "Contact",
-  description:
-    "Call or WhatsApp Rhema Real Estates about plots in Nairobi, Kiambu, Machakos, Kajiado and Central Kenya.",
-  path: "/contact",
-});
+export async function generateMetadata() {
+  const content = await getPublicSiteContent();
+  return buildPageMetadata({
+    title: content["contact.metaTitle"],
+    description: content["contact.metaDescription"],
+    path: "/contact",
+  });
+}
 
 const phoneNumber = "0711634163";
 const whatsappNumber = "254711634163";
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const content = await getPublicSiteContent();
   const siteKey = process.env.TURNSTILE_SITE_KEY?.trim() || null;
   const formConfigured = Boolean(
     siteKey &&
@@ -24,17 +28,14 @@ export default function ContactPage() {
     <main className="route-page" id="main-content">
       <div className="site-width">
         <header className="route-intro">
-          <h1 className="route-title">Speak with Rhema.</h1>
-          <p className="route-description">
-            Call or send a WhatsApp message about plots in the Nairobi
-            Metropolitan Area, Kiambu, Machakos, Kajiado or Central Kenya.
-          </p>
+          <h1 className="route-title">{content["contact.title"]}</h1>
+          <p className="route-description">{content["contact.intro"]}</p>
         </header>
 
         <div className="contact-page-actions">
           <a className="contact-page-link" href={`tel:${phoneNumber}`}>
             <Phone aria-hidden="true" size={17} />
-            <span>Call {phoneNumber}</span>
+            <span>{content["contact.callPrefix"]} {phoneNumber}</span>
           </a>
           <a
             className="contact-page-link"
@@ -43,7 +44,7 @@ export default function ContactPage() {
             target="_blank"
           >
             <MessageCircle aria-hidden="true" size={17} />
-            <span>WhatsApp Rhema</span>
+            <span>{content["contact.whatsappLink"]}</span>
             <ArrowUpRight aria-hidden="true" size={14} />
           </a>
         </div>
@@ -54,14 +55,14 @@ export default function ContactPage() {
         >
           <div className="inquiry-section-intro">
             <h2 className="inquiry-section-title" id="inquiry-section-title">
-              Ask about land in Rhema&apos;s service areas.
+              {content["contact.inquiryTitle"]}
             </h2>
-            <p className="route-description">
-              Send a question about plots in Nairobi, Kiambu, Machakos, Kajiado
-              or Central Kenya.
-            </p>
+            <p className="route-description">{content["contact.inquiryCopy"]}</p>
           </div>
-          <InquiryForm siteKey={formConfigured ? siteKey : null} />
+          <InquiryForm
+            content={content}
+            siteKey={formConfigured ? siteKey : null}
+          />
         </section>
       </div>
     </main>

@@ -142,9 +142,12 @@ export function parsePublicPropertyDetail(
   };
 }
 
-export function formatPropertyPrice(priceKes: number | null): string {
+export function formatPropertyPrice(
+  priceKes: number | null,
+  priceOnRequest = "Price on request",
+): string {
   if (priceKes === null) {
-    return "Price on request";
+    return priceOnRequest;
   }
 
   if (!Number.isSafeInteger(priceKes) || priceKes < 0) {

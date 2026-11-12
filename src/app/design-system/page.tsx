@@ -3,8 +3,10 @@ import { ArrowUpRight } from "lucide-react";
 import { BlogCard, PropertyCard } from "@/components/ui/cards";
 import { Button } from "@/components/ui/button";
 import { TextArea, TextInput } from "@/components/ui/fields";
+import { SiteHeader } from "@/components/site/site-header";
 import { Navigation } from "@/components/ui/navigation";
 import { StatusBadge, type PropertyStatus } from "@/components/ui/status-badge";
+import { getDefaultSiteContent } from "@/lib/site-content/defaults";
 
 export const metadata: Metadata = {
   title: "Design system",
@@ -23,6 +25,7 @@ const colors = [
   { label: "Soft terracotta", value: "#eadbd4", token: "--color-accent-soft" },
   { label: "Olive", value: "#65715a", token: "--color-olive" },
   { label: "Soft olive", value: "#e5e9e1", token: "--color-olive-soft" },
+  { label: "Forest", value: "#193d32", token: "--color-forest" },
   { label: "White", value: "#ffffff", token: "--color-white" },
 ];
 
@@ -63,11 +66,13 @@ const radii = [
 const statuses: PropertyStatus[] = ["available", "reserved", "sold"];
 
 export default function DesignSystemPage() {
+  const content = getDefaultSiteContent();
+
   return (
     <>
       <Navigation />
       <main className="showcase">
-        <section className="showcase-intro">
+        <section className="showcase-intro showcase-intro--depth">
           <div>
             <p className="showcase-kicker">Rhema Real Estates / Foundation</p>
             <h1 className="showcase-title">
@@ -81,15 +86,18 @@ export default function DesignSystemPage() {
           </p>
         </section>
 
-        <section className="showcase-section" id="tokens">
+        <section className="showcase-section showcase-section--tonal" id="tokens">
           <div className="section-heading">
             <div>
               <p className="section-kicker">01 / Color</p>
               <h2 className="section-title">A palette drawn from paper and earth</h2>
             </div>
             <p className="section-description">
-              Soft mineral neutrals anchor the system. Terracotta and olive
-              appear sparingly, reserved for emphasis and status.
+              Warm neutrals and paper anchor the system. Forest green carries
+              the strongest panels and interaction states. Use olive for small
+              accents on light surfaces, and soft olive for highlighted words
+              on forest. The italic word above demonstrates that pairing;
+              terracotta remains a restrained accent.
             </p>
           </div>
           <div className="token-grid">
@@ -212,13 +220,33 @@ export default function DesignSystemPage() {
 
           <div className="component-stack">
             <div>
+              <p className="token-label">Navigation / responsive mobile menu</p>
+              <p className="section-description">
+                The public header uses this expandable menu at 760px and below.
+                Open and close the preview to review its focus and motion states.
+              </p>
+              <div className="mobile-navigation-specimen">
+                <SiteHeader content={getDefaultSiteContent()} mobilePreview />
+              </div>
+            </div>
+
+            <div>
               <p className="token-label">Buttons / variants</p>
               <div className="component-row">
                 <Button variant="primary-outlined">
                   Primary outlined <ArrowUpRight aria-hidden="true" size={14} />
                 </Button>
+                <Button variant="forest">
+                  Forest action <ArrowUpRight aria-hidden="true" size={14} />
+                </Button>
                 <Button variant="secondary-text">Secondary text</Button>
                 <Button variant="ghost">Ghost action</Button>
+              </div>
+              <p className="token-label">Navigation / hover and keyboard focus</p>
+              <div className="component-row">
+                <a className="forest-link-sample" href="#components">
+                  Properties / hover to preview
+                </a>
               </div>
             </div>
 
@@ -226,7 +254,7 @@ export default function DesignSystemPage() {
               <p className="token-label">Status / property markers</p>
               <div className="component-row">
                 {statuses.map((status) => (
-                  <StatusBadge key={status} status={status} />
+                  <StatusBadge content={content} key={status} status={status} />
                 ))}
               </div>
             </div>
@@ -266,6 +294,7 @@ export default function DesignSystemPage() {
                   priceKes={null}
                   status={null}
                   title="Property card specimen"
+                  content={content}
                 />
                 <BlogCard
                   category="Land journal"
