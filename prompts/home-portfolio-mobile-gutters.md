@@ -1,8 +1,8 @@
-# Homepage portfolio mobile gutters
+# Homepage portfolio mobile copy spacing
 
 ## Goal
 
-Make the homepage Land portfolio copy and image feel comfortably inset on phones instead of sitting against the section's content edge.
+Give the homepage Land portfolio copy and image enough breathing room on phones so the copy does not appear pressed against the panel edge.
 
 ## Skills read
 
@@ -23,21 +23,21 @@ Make the homepage Land portfolio copy and image feel comfortably inset on phones
 
 ## Decisions and sources
 
-- The existing mobile rule in `src/app/globals.css` sets `.home-portfolio-layout` to `padding: var(--space-4) 0`, which deliberately removes left and right inset from the content. This is the direct cause of the copy feeling flush.
-- At viewport widths up to 760px, add an inset horizontal gutter using the existing `--space-4` token while keeping the current vertical spacing and stacked image/copy order. Apply the gutter to the full inner layout so image and text align on a shared editorial grid.
+- The phone CSS currently gives `.home-portfolio-layout` 16px horizontal padding (`--space-4`). Browser screenshot review shows that inset still looks too tight inside the panel.
+- Increase only the phone horizontal padding to the existing `--space-6` token (24px), retaining the current vertical padding and stacked image/copy order. Apply the inset to the full inner layout so image and copy align.
 - Keep the outer section separators, image caption, copy, image treatments, typography, and link unchanged. Do not create another card or border.
 - Verify at 375px, 768px, and 1440px; 768px uses the existing tablet stack and already receives the outer layout's normal padding.
 
 ## Files to touch after approval
 
-- `src/app/globals.css`: fix only the mobile inline padding for `.home-portfolio-layout`.
+- `src/app/globals.css`: increase only the phone inline padding for `.home-portfolio-layout`.
 - `docs/progress.md`: record the verified spacing fix and responsive review.
 - `AGENTS.md`: update the related homepage portfolio known-issues note if necessary.
 - This plan: add implementation and validation results.
 
 ## Acceptance criteria
 
-- On a 375px phone, the portfolio image and copy no longer touch the inner section content edge and share a consistent inset.
+- On a 375px phone, the portfolio image and copy have a clear 24px inset from the inner layout edge and share consistent alignment.
 - The heading, descriptions, CTA, caption, and section separators remain intact.
 - Existing tablet and desktop layout remain unchanged.
 - No extra card/border or hard-coded palette values are introduced.
@@ -53,9 +53,9 @@ Make the homepage Land portfolio copy and image feel comfortably inset on phones
 
 ## Implementation and validation results
 
-- At the phone breakpoint, kept the existing vertical padding and restored `var(--space-4)` horizontal padding on the inner portfolio layout. This insets the text and image together without adding a card or border.
-- `npx tsc --noEmit` passed.
+- Initial implementation restored `var(--space-4)` horizontal padding. Screenshot review showed the copy still looked cramped in the panel, so the approved follow-up is to increase it to `var(--space-6)`.
+- Initial implementation at 16px was too tight in screenshot review. Increased phone horizontal padding to `var(--space-6)` (24px).
+- At 375px, browser measurement confirms 24px padding and aligned image/copy with no horizontal overflow; screenshot review confirms more breathing room.
+- At 768px and 1440px, responsive review confirms the existing tablet and desktop layouts remain intact with no horizontal overflow.
+- `npx tsc --noEmit`, `npm run lint`, and `SITE_URL=https://www.rhemarealestates.com npm run build` passed.
 - `git diff --check` passed.
-- `npm run lint` passed.
-- The production build passed using a temporary isolated output directory; the directory and generated `tsconfig.json` changes were removed.
-- Browser measurements at requested widths 375px, 768px, and 1440px found no horizontal overflow. The portfolio image and copy align at 16px on mobile, retain the tablet gutter, and remain two-column at desktop.

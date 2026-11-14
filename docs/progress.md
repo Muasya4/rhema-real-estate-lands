@@ -514,16 +514,17 @@ Validation completed:
 - Browser review at 375px, 768px, and 1440px confirmed no horizontal overflow and the new responsive layout.
 - `git diff --check`
 
-### Homepage portfolio mobile gutters
+### Homepage portfolio mobile copy spacing
 
-Restored a 1rem horizontal gutter at the phone breakpoint for the Land portfolio content. The image and copy now share an inset instead of sitting flush against the section's content edge. Existing section rules, copy, caption, and desktop/tablet layout remain unchanged.
+Increased the phone horizontal inset for the Land portfolio content from 16px to 24px after screenshot review showed the initial spacing still looked cramped. The image and copy now share the larger inset. Existing section rules, copy, caption, and desktop/tablet layout remain unchanged.
 
 Validation:
 
 - `npx tsc --noEmit`
 - `npm run lint`
-- `SITE_URL=https://www.rhemarealestates.com npm run build` passed using a temporary isolated output directory; temporary output and generated `tsconfig.json` changes were removed.
-- Browser measurements at requested widths 375px, 768px, and 1440px found no horizontal overflow. The portfolio image and copy align at 16px on mobile, retain the tablet gutter, and remain two-column at desktop.
+- `SITE_URL=https://www.rhemarealestates.com npm run build`
+- Browser review at 375px, 768px, and 1440px confirms the intended spacing/layout and no horizontal overflow.
+- At 375px, browser measurement confirms 24px padding with image and copy aligned.
 - `git diff --check`
 
 ## Known issues
