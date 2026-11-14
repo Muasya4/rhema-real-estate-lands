@@ -4183,6 +4183,7 @@ a {
 
   .home-portfolio-layout {
     padding: var(--space-4) 0;
+    padding-inline: var(--space-4);
   }
 
   .home-region-list {

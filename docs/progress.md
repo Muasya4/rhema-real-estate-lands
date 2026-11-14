@@ -514,6 +514,18 @@ Validation completed:
 - Browser review at 375px, 768px, and 1440px confirmed no horizontal overflow and the new responsive layout.
 - `git diff --check`
 
+### Homepage portfolio mobile gutters
+
+Restored a 1rem horizontal gutter at the phone breakpoint for the Land portfolio content. The image and copy now share an inset instead of sitting flush against the section's content edge. Existing section rules, copy, caption, and desktop/tablet layout remain unchanged.
+
+Validation:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `SITE_URL=https://www.rhemarealestates.com npm run build` passed using a temporary isolated output directory; temporary output and generated `tsconfig.json` changes were removed.
+- Browser measurements at requested widths 375px, 768px, and 1440px found no horizontal overflow. The portfolio image and copy align at 16px on mobile, retain the tablet gutter, and remain two-column at desktop.
+- `git diff --check`
+
 ## Known issues
 
 - **Resolved:** The preview originally rendered unstyled because the custom Turbopack Tailwind rule matched `.module.css`, leaving route `styles.*` values undefined while emitting plain global selectors. Narrowed the rule to `**/globals.css`, preserving the Tailwind transform for the global stylesheet while allowing native Next/Turbopack CSS Module handling. Verified the dev response has matching scoped class names and CSS selectors, and the production prerender contains module-generated classes.
