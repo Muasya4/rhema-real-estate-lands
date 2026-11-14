@@ -6,13 +6,15 @@ Created the ordered implementation specs in `docs/specs/` for the design system,
 
 ## Critical next task: enable production inquiry submissions
 
-**Do this first next session.** The site is live at `https://www.rhemarealestates.com`, Vercel can read the existing Supabase project, and admin sign-in has been confirmed. Public inquiry submission is still unavailable until the following values are configured in the Vercel **Production** environment:
+The public form protections and the admin-only `/admin/inquiries` inbox are implemented locally. The live Contact page still reports that the form is unavailable. The production environment must be configured and the code deployed before submissions and the inbox can be verified against hosted data.
+
+The following values must be configured in the Vercel **Production** environment:
 
 - `SUPABASE_SECRET_KEY`
 - `TURNSTILE_SECRET_KEY`
 - `TURNSTILE_SITE_KEY`
 
-Set these directly in Vercel; never paste secret values into chat, Git, or project documentation. Redeploy after saving. Then submit one synthetic inquiry with the owner's approval and verify it appears in the admin inquiry view. Keep inquiry table access admin-only; do not enable anonymous direct inserts. See `prompts/critical-live-inquiry-setup.md`.
+Set these directly in Vercel; never paste secret values into chat, Git, or project documentation. Redeploy after saving. Then sign in as an admin and open `/admin/inquiries`. After separate owner approval, submit one synthetic inquiry and confirm it appears in the inbox. Keep inquiry table access admin-only; do not enable anonymous direct inserts. See `prompts/critical-live-inquiry-setup.md` and `prompts/inquiry-flow-admin-inbox.md`.
 
 Decisions and issues to track before related implementation:
 
@@ -164,17 +166,20 @@ Validation completed:
 
 Implemented a general inquiry form on `/contact`. The form validates input in a server action, checks any supplied property ID against published properties, verifies Cloudflare Turnstile server-side, uses a honeypot, and inserts through a server-only Supabase secret client. Anonymous direct inquiry-table writes remain disabled; no migration or RLS policy was changed. The form retains phone and WhatsApp alternatives and provides pending, success, and failure states.
 
+Added a protected, read-only `/admin/inquiries` inbox. It uses the authenticated Supabase server client and existing admin-only RLS policy, and displays the visitor's message and contact details, receipt time in Nairobi time, and an admin property link when associated. The admin landing page links to the inbox. No inquiry policies or database schema were changed.
+
 Added focused Node tests for form validation, mocked general/property-specific inserts, unpublished-property rejection, Turnstile failure and replay, honeypot handling, and insert errors. One owner-confirmed test inquiry is present in the active Supabase project and was left untouched.
 
 Validation completed:
 
-- `npm test`: 10 tests passed.
+- `npm test`: 147 tests passed, including admin inquiry mapping, property association, query failures, and unavailable configuration.
 - `npx tsc --noEmit`
 - `npm run lint`
-- `npm run build`; `/contact` is statically prerendered.
-- Responsive viewport checks at 375px, 768px, and 1440px found no horizontal overflow.
+- `npm run build` with a temporary isolated output directory; `/admin/inquiries` appears as a partial-prerendered route.
+- The signed-out local `/admin/inquiries` response redirects to `/admin/login`.
+- Local `/contact` renders the configured form, but the integrated browser could not complete Cloudflare Turnstile (`300010`); no inquiry was submitted. An authenticated admin session was not available to review real inbox records or its responsive rendering.
 
-**Critical production blocker:** Live Turnstile verification and a hosted inquiry insert have not been tested. The production Vercel environment still needs `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY`. The action fails closed until these are set. Configure them in Vercel Production, redeploy, then verify using one synthetic inquiry with owner approval. Do not put secrets in `.env.example` or share them in chat.
+**Critical production blocker:** Live Turnstile verification and a hosted inquiry insert have not been tested. The live Contact page reports the form unavailable. The production Vercel environment still needs `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY`. The action fails closed until these are set. Configure them directly in Vercel Production, redeploy, then sign in and open `/admin/inquiries`. Submit one synthetic inquiry only after owner approval. Do not put secrets in `.env.example` or share them in chat.
 
 ## Phase 08: Admin authentication
 
@@ -278,7 +283,7 @@ Known issues:
 - **Phase 02 browser review:** Automated browser connection timed out during this pass. Production build and static route generation passed, and `/regions` returned HTTP 200. Mobile/tablet screenshots and keyboard review remain to be done manually.
 - **Phase 03 Supabase validation:** The user's first test-project SQL run failed because the migration tried to change ownership-managed Storage objects. The migration now avoids those operations. Application schema passed on a disposable PostgreSQL compatibility harness before this correction. The corrected file and Dashboard Storage setup still need verification on a clean temporary project; no client DB was touched.
 - **Production Supabase plan:** The existing active Free project is being used by the live site. Supabase may pause Free projects after inactivity, and downloadable database backups are not included. The owner has chosen to remain on Free for now.
-- **CRITICAL, next session first: Phase 07 live inquiry setup:** The public site reads regions from Supabase and admin sign-in works, but public inquiry submission remains unavailable until `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY` are added to Vercel Production. Redeploy, then verify Turnstile and one approved synthetic inquiry. Keep direct anonymous inquiry-table writes disabled.
+- **CRITICAL: Phase 07 production inquiry setup:** The admin-only `/admin/inquiries` inbox is implemented locally. The live Contact page still reports the form unavailable until `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY` are configured in Vercel Production and the code is deployed. Then verify admin inbox access and, after owner approval, submit one synthetic inquiry. Keep direct anonymous inquiry-table writes disabled.
 - **Phase 05 not-found status:** Accepted limitation. Unknown and unpublished property slugs render the correct not-found UI with `noindex`, but streamed responses return HTTP 200 under Next.js Cache Components. The user chose to keep streaming instead of changing the broader rendering strategy.
 - **Phase 08 live Auth setup:** `AUTH_SITE_URL` is intentionally blank in `.env.example`. Production SMTP, the Auth callback allowlist, sign-up/confirmation/password policies, rate limits, CAPTCHA/abuse protection, trusted admin provisioning, and live staging flows still require owner setup and verification. No live recovery email or account test was performed.
 - **Phase 08 password-only decision:** The user declined MFA. This is less resistant to credential theft than MFA and should be treated as an accepted risk, not as an equivalent security control.
@@ -495,6 +500,19 @@ Validation completed:
 Known issues:
 
 - Browser navigation and bounded direct route checks did not complete. Visual confirmation of the resulting spacing at 375px, 768px, and 1440px remains pending.
+
+### Homepage Land portfolio framing
+
+Removed the portfolio image's stacked square frames and padded card styling while retaining its caption and section divider rules. Improved the copy spacing for narrow screens. At widths up to 1024px, the image and text now stack so the heading and enquiry link do not feel compressed on tablets.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test`: 142 tests passed.
+- `SITE_URL=https://www.rhemarealestates.com npm run build` passed using a temporary isolated output directory. Temporary output and generated `tsconfig.json` changes were removed.
+- Browser review at 375px, 768px, and 1440px confirmed no horizontal overflow and the new responsive layout.
+- `git diff --check`
 
 ## Known issues
 

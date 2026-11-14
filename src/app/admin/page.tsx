@@ -38,6 +38,12 @@ async function AdminContent() {
       </Link>
       <Link
         className="button button--primary-outlined admin-dashboard-link"
+        href="/admin/inquiries"
+      >
+        Read inquiries
+      </Link>
+      <Link
+        className="button button--primary-outlined admin-dashboard-link"
         href="/admin/about"
       >
         Edit About page

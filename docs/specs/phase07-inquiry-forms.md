@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented locally. The `/contact` page has a protected general inquiry form. Production submission remains blocked until its server-side Supabase and Turnstile environment variables are configured in Vercel. This is the first critical task for the next session; see the top of `docs/progress.md`.
+Implemented locally. The `/contact` page has a protected general inquiry form, and `/admin/inquiries` provides a read-only inbox for admins. Production submission remains blocked until its server-side Supabase and Turnstile environment variables are configured in Vercel. See `docs/progress.md`.
 
 ## Goal
 
@@ -12,6 +12,7 @@ Provide a private inquiry form that records valid inquiries and gives the visito
 
 - General inquiry form at `/contact`.
 - Optional property-specific inquiry using nullable `property_id`.
+- Protected admin inbox at `/admin/inquiries` for reading submitted inquiries.
 - Server-side validation and database write through a server-only Supabase secret client.
 - Server-verified Cloudflare Turnstile and a honeypot; anonymous direct table writes remain disabled.
 - Pending, success, and actionable error states.
@@ -23,6 +24,7 @@ Provide a private inquiry form that records valid inquiries and gives the visito
 - Validate all fields on the server. Client-side checks are supplemental only.
 - Validate any supplied property ID against an eligible property record; never resolve a property by title or location text.
 - Public callers may submit through the validated server action but may not directly read, insert, edit, or delete inquiry records through Supabase.
+- Admins read inquiries through the authenticated server client and existing admin-only RLS policy.
 - Do not log full inquiry contents or expose database credentials to the browser.
 - Do not add email sending in this phase. `docs/product.md` defers email integration.
 - Provide visible success and failure states. A failed insert must not look successful.
@@ -32,6 +34,8 @@ Provide a private inquiry form that records valid inquiries and gives the visito
 ## Acceptance criteria
 
 - Automated tests verify valid general and property-specific inquiries are passed to the insert with the correct association. A live hosted insert has not been tested.
+- Automated tests verify inquiry data mapping, property association, query failures, and unavailable Supabase configuration for the admin inbox.
+- The admin inbox is read-only and shows inquiry contact details, message, receipt time, and any property relation.
 - Invalid input and database failures return clear, non-sensitive feedback.
 - Anonymous users cannot query or mutate stored inquiry records.
 - Duplicate submissions and abuse are handled according to the agreed protection approach.

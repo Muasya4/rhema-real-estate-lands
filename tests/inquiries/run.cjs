@@ -27,6 +27,7 @@ require.extensions[".ts"] = (module, filename) => {
 
 require("./submission.test.cjs");
 require("./turnstile.test.cjs");
+require("./admin-data.test.cjs");
 require("../properties/properties.test.cjs");
 require("../properties/data.test.cjs");
 require("../properties/slug.test.cjs");
