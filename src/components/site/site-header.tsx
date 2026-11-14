@@ -30,8 +30,15 @@ export function SiteHeader({
     >
       <div className="site-width site-header-layout">
         <Link className="site-brand" href="/" aria-label={content["global.homeLinkLabel"]}>
-          <span className="site-brand-name">{content["global.brandName"]}</span>
-          <span className="site-brand-description">{content["global.brandDescriptor"]}</span>
+          <span className="site-brand-mark" aria-hidden="true">
+            R
+          </span>
+          <span className="site-brand-copy">
+            <span className="site-brand-name">{content["global.brandName"]}</span>
+            <span className="site-brand-description">
+              {content["global.brandDescriptor"]}
+            </span>
+          </span>
         </Link>
 
         <nav

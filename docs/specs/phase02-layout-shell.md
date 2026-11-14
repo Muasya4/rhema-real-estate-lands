@@ -49,6 +49,6 @@ Run TypeScript, lint, and production build. Check keyboard navigation and route 
 - Property and journal detail routes remain deferred to Phases 05 and 06. No navigation links point to those routes yet.
 - The public header uses a keyboard-accessible hamburger menu on mobile. Its client-side state is limited to opening and closing the menu; desktop navigation remains visible.
 - `/about` presents confirmed company information and reads the CEO profile from the public leadership table. Profile editing stays in the protected admin area.
-- Public shell labels and fixed navigation wording can be edited in the protected site-content editor. Route destinations and contact numbers remain code-owned.
+- Editorial headings and descriptive copy within public page sections can be edited in the protected page-content editor. The homepage hero and portfolio images can be replaced there. Header, navigation, footer, button and link labels, destinations, metadata, form/system wording, and accessibility behavior remain code-owned. Restore defaults is available per section only.
 - `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass. The production build reports the expected static routes.
 - An HTTP request to `/regions` returned 200. Browser automation timed out during review, and a sequential local development-server route check stalled. Responsive screenshots and keyboard interaction therefore still need a manual browser review.

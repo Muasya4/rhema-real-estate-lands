@@ -9,6 +9,7 @@ import {
 import { Suspense } from "react";
 import { HomeJournal } from "@/components/journal/home-journal";
 import { HomeRegionList } from "@/components/regions/home-region-list";
+import { HeroImageShape } from "@/components/ui/hero-image-shape";
 import { buildPageMetadata } from "@/lib/seo/site-url";
 import { getPublicSiteContent } from "@/lib/site-content/data";
 
@@ -26,6 +27,9 @@ export async function generateMetadata() {
 
 export default async function Home() {
   const content = await getPublicSiteContent();
+  const headline = content["home.title"];
+  const highlightedWords = content["home.titleHighlight"];
+  const highlightStart = headline.indexOf(highlightedWords);
 
   return (
     <>
@@ -34,9 +38,15 @@ export default async function Home() {
           <div className="home-hero-copy">
             <p className="home-location-line">{content["home.locationLine"]}</p>
             <h1 className="home-title" id="home-title">
-              {content["home.titleStart"]}{" "}
-              <em>{content["home.titleHighlight"]}</em>{" "}
-              {content["home.titleEnd"]}
+              {highlightStart >= 0 ? (
+                <>
+                  {headline.slice(0, highlightStart)}
+                  <em>{highlightedWords}</em>
+                  {headline.slice(highlightStart + highlightedWords.length)}
+                </>
+              ) : (
+                headline
+              )}
             </h1>
             <p className="home-intro">
               {content["home.intro"]}
@@ -54,16 +64,15 @@ export default async function Home() {
           </div>
 
           <figure className="home-hero-figure">
-            <div className="home-image-frame">
+            <HeroImageShape className="home-image-frame home-image-frame--hero">
               <Image
-                src="/land-placeholder.svg"
+                src={content["home.heroImagePath"]}
                 alt={content["home.heroImageAlt"]}
                 width={1200}
                 height={1000}
                 priority
               />
-              <span className="home-image-label">{content["home.heroImageLabel"]}</span>
-            </div>
+            </HeroImageShape>
             <figcaption className="home-image-caption">
               <span>{content["home.heroCaptionName"]}</span>
               <span>{content["home.heroCaptionLocation"]}</span>
@@ -80,16 +89,14 @@ export default async function Home() {
             <figure className="home-portfolio-figure">
               <div className="home-image-frame home-image-frame--portfolio">
                 <Image
-                  src="/land-placeholder.svg"
+                  src={content["home.portfolioImagePath"]}
                   alt={content["home.portfolioImageAlt"]}
                   width={1200}
                   height={1000}
                 />
-                <span className="home-image-label">{content["home.portfolioImageLabel"]}</span>
               </div>
               <figcaption className="home-image-caption">
                 <span>{content["home.portfolioCaptionTitle"]}</span>
-                <span>{content["home.portfolioCaptionNote"]}</span>
               </figcaption>
             </figure>
 

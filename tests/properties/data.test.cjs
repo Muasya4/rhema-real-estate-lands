@@ -93,7 +93,7 @@ test("loads published properties through the anonymous client and maps storage i
     result.properties[0].imageSrc,
     "https://images.example.invalid/quarter-acre/front.jpg",
   );
-  assert.equal(result.properties[0].imageIsPlaceholder, false);
+  assert.equal(result.properties[0].imageAlt, "Open quarter-acre plot in Kamakis");
   assert.deepEqual(query.filters, [["is_published", true]]);
   assert.deepEqual(
     query.orders,
@@ -104,7 +104,7 @@ test("loads published properties through the anonymous client and maps storage i
   );
 });
 
-test("uses a labeled local illustration when a published record has no images", async () => {
+test("does not add fallback artwork when a published record has no images", async () => {
   mockSupabase({
     data: [createProperty({ images: [] })],
     error: null,
@@ -113,9 +113,8 @@ test("uses a labeled local illustration when a published record has no images", 
   const result = await getPublishedProperties();
 
   assert.equal(result.status, "success");
-  assert.equal(result.properties[0].imageSrc, "/land-placeholder.svg");
-  assert.match(result.properties[0].imageAlt, /placeholder/);
-  assert.equal(result.properties[0].imageIsPlaceholder, true);
+  assert.equal(result.properties[0].imageSrc, null);
+  assert.equal(result.properties[0].imageAlt, null);
 });
 
 test("returns a distinct successful empty result", async () => {

@@ -8,16 +8,36 @@ import {
   applySiteContentOverrides,
   parseSiteContentOverrides,
 } from "./model";
+import { SITE_CONTENT_IMAGE_KEYS } from "./defaults";
 import {
   getDefaultSiteContent,
   type SiteContent,
 } from "./defaults";
 
 export const siteContentCacheTag = "public-site-content";
+type SiteContentClient =
+  | ReturnType<typeof createSupabaseServerClient>
+  | Awaited<ReturnType<typeof createSupabaseAuthServerClient>>;
 
 export type AdminSiteContentResult =
   | { status: "success"; content: SiteContent }
   | { status: "error" };
+
+function resolveContentImageUrls(
+  content: SiteContent,
+  client: SiteContentClient,
+): SiteContent {
+  const resolved = { ...content };
+  for (const key of SITE_CONTENT_IMAGE_KEYS) {
+    const path = resolved[key];
+    if (path.startsWith("site-content/")) {
+      resolved[key] = client.storage
+        .from("property-images")
+        .getPublicUrl(path).data.publicUrl;
+    }
+  }
+  return resolved;
+}
 
 export async function getPublicSiteContent(): Promise<SiteContent> {
   "use cache";
@@ -48,7 +68,10 @@ export async function getPublicSiteContent(): Promise<SiteContent> {
     }
 
     try {
-      return applySiteContentOverrides(parseSiteContentOverrides(data));
+      return resolveContentImageUrls(
+        applySiteContentOverrides(parseSiteContentOverrides(data)),
+        client,
+      );
     } catch (error) {
       if (!(error instanceof TypeError)) throw error;
       console.error("Public site content is invalid; using built-in defaults.");
@@ -87,7 +110,10 @@ export async function getAdminSiteContent(): Promise<AdminSiteContentResult> {
     try {
       return {
         status: "success",
-        content: applySiteContentOverrides(parseSiteContentOverrides(data)),
+        content: resolveContentImageUrls(
+          applySiteContentOverrides(parseSiteContentOverrides(data)),
+          client,
+        ),
       };
     } catch (error) {
       if (!(error instanceof TypeError)) throw error;

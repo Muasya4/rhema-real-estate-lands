@@ -20,7 +20,7 @@ For every implementation request:
 10. Explain what changed and what to review carefully.
 
 ## UI Work
-- Reference /design/editorial-reference.png for all pages.
+- Use the approved black-and-gold system across public and admin pages. Use `/design/events-district-1.png` for its dark palette and gold accents, while retaining the editorial typography, spacing, and restrained layout from `/design/editorial-reference.png`.
 - Use the design system in globals.css. No hard-coded colors.
 - No emojis. Use Lucide React icons only.
 - No gradients, no glassmorphism, no AI-slop patterns.
@@ -91,7 +91,7 @@ These are about what the site says, not how it's built. The `write-rhema-copy` s
 
 - Never use gradients, glassmorphism, or generic AI patterns.
 - Never use icon-in-a-box grids.
-- Never let the design drift from `/design/editorial-reference.png`. Match the reference.
+- Keep the approved black-and-gold palette consistent with the Events District reference and preserve the editorial layout principles from `/design/editorial-reference.png`.
 - Never use hard-coded colors. Use tokens from `globals.css`.
 
 ## Things Not to Do — Engineering
@@ -141,5 +141,9 @@ Before the final response, run one reporting pass. If candidates remain, from th
 - **CRITICAL, next session first: Phase 07 live inquiry setup:** The site is live at `https://www.rhemarealestates.com`, reads regions from the existing Supabase project, and admin sign-in works. Public inquiry submission is not verified until `SUPABASE_SECRET_KEY`, `TURNSTILE_SECRET_KEY`, and `TURNSTILE_SITE_KEY` are configured in Vercel Production, followed by redeployment and an approved synthetic submission test. Never share secret values or enable anonymous direct inquiry-table writes.
 - **Phase 11 SEO:** Production `SITE_URL` and `AUTH_SITE_URL` use `https://www.rhemarealestates.com`; the domain, canonical, sitemap, and admin sign-in were verified. Responsive browser review and checks against published property/article records remain pending.
 - **Mobile navigation browser review:** The mobile menu implementation, type check, lint, and production build are complete. The integrated browser automation timed out connecting to CDP, so menu interaction and screenshots at 375px, 768px, and 1440px remain unverified.
-- **Public site content editor:** `/admin/content` and its public-copy wiring are implemented locally. The `site_content` migration has not been applied to hosted Supabase; pgTAP and authenticated save/reset review remain pending. The local database lacks the table, so public reads correctly use version-controlled defaults. Integrated browser automation timed out, leaving responsive review at 375px, 768px, and 1440px incomplete. No hosted migration or content writes were made.
+- **Public page-content editor:** `/admin/content` is limited to public page-section headings/descriptions and the homepage hero/portfolio images. Navigation, footer, action labels, forms, metadata, system states, destinations, and dynamic records stay protected. Section restore is implemented; there is no site-wide reset. Tests, type-check, production build, and targeted lint passed. The full lint command did not finish, and integrated browser automation timed out connecting over CDP, so responsive review at 375px, 768px, and 1440px remains pending. The hosted status of the existing `site_content` migration is unconfirmed; authenticated upload/save/restore review remains pending. The local database lacks the table, so public reads use defaults. No hosted database changes were made.
+- **Client presentation cleanup:** Homepage photography notices and unpublished journal teaser cards were removed. The approved abstract home illustrations remain without temporary labels. Property records with no uploaded images no longer show fallback placeholder artwork. Unit, type, lint, and production-build results are tracked in `docs/progress.md`; responsive browser review remains pending.
+- **Zoho email handoff:** `ZOHO-FREE-SETUP-FOR-EVANS.md` and `ZOHO-CLOUDFLARE-DEVELOPER-RUNBOOK.md` separate the CEO's account setup from the developer's authorized Cloudflare DNS work; `ZOHO-FREE-EMAIL-SETUP.md` remains the detailed reference. No Zoho account or DNS changes have been made. Zoho Free SMTP availability is unconfirmed. Mailbox setup does not configure Supabase Auth SMTP, create the website admin role, or send inquiry notifications to email.
 - **Production build duration:** The successful Next.js build took about 4.8 minutes to compile and 6.2 minutes for its TypeScript step while separate lint and type-check commands were running. Cause is unknown; monitor if repeated.
+- **Approved black-and-gold design rollout:** Shared styles, TypeScript, lint, tests, and an isolated production build pass. The default build output conflicted with an already-running development server, so the build was isolated. Responsive browser review at 375px, 768px, and 1440px remains pending because CDP connection timed out.
+- **Homepage Regions presentation:** Decorative portfolio/region indexes are removed, the region lists use open editorial styling with fine separators, and the enquiry step sequence is retained. The survey-line illustration was removed after review. TypeScript, lint, tests, and isolated build pass. Browser navigation and bounded direct requests to the local homepage and Regions route did not complete, so responsive visual review at 375px, 768px, and 1440px remains pending.

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import {
   formatJournalDate,
   type PublicJournalPost,
@@ -29,11 +30,17 @@ export function JournalCard({ content, post }: JournalCardProps) {
         </Link>
       ) : null}
       <div className="journal-card-copy">
-        <p className="journal-card-date">{formatJournalDate(post.publishedAt)}</p>
+        <time className="journal-card-date" dateTime={post.publishedAt}>
+          {formatJournalDate(post.publishedAt)}
+        </time>
         <h2>
           <Link href={`/journal/${post.slug}`}>{post.title}</Link>
         </h2>
         <p className="journal-card-excerpt">{post.excerpt}</p>
+        <Link className="journal-card-link" href={`/journal/${post.slug}`}>
+          {content["journal.readArticleLink"]}
+          <ArrowUpRight aria-hidden="true" size={14} />
+        </Link>
       </div>
     </article>
   );

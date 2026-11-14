@@ -21,7 +21,7 @@ Build a server-rendered, curated portfolio page using real property records from
 - Show only properties approved for public display under the agreed publication policy.
 - Render only fields present in the record. Omit unknown plot size and show `Price on request` when price is not supplied.
 - Display status as a small marker, not a banner. Do not imply availability from missing status data.
-- Use actual property images from the configured public image source. Keep a neutral local fallback for missing imagery.
+- Use actual property images from the configured public image source. Omit the image when a property has no uploaded photo; do not show fallback artwork.
 - Do not create mock records in production, infer property relationships from names, or add infinite scrolling.
 - Provide clear empty and error states. Do not turn failed data reads into success-shaped empty results without reporting the failure.
 - Ensure cards have descriptive links and images have meaningful alt text.

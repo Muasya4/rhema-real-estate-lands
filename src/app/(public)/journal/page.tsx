@@ -172,9 +172,9 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
   const content = await getPublicSiteContent();
 
   return (
-    <main className="route-page" id="main-content">
+    <main className="route-page journal-page" id="main-content">
       <div className="site-width">
-        <header className="route-intro">
+        <header className="route-intro route-intro--journal">
           <h1 className="route-title">{content["journal.title"]}</h1>
           <p className="route-description">{content["journal.intro"]}</p>
         </header>

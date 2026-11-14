@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented. Public journal pages read published Supabase records, sanitize article content, and keep the planned home-page topics only when no articles are published.
+Implemented. Public journal pages read published Supabase records and sanitize article content. The home page shows journal cards only for published posts and omits the journal section when none are published.
 
 ## Goal
 
@@ -23,11 +23,12 @@ Build the public journal index and article pages from approved, published blog r
 - Render rich text safely. Do not render unsanitized HTML from user-editable content.
 - Unknown or unpublished slugs must not reveal content.
 - Use editorial layouts and responsive imagery consistent with the design system.
-- Replace home-page topic placeholders only when actual approved posts are available.
+- Do not show planned or unpublished home-page topic teasers.
 
 ## Acceptance criteria
 
 - The journal index lists only actual published content and links by slug.
+- The home page shows only actual published journal posts.
 - Article detail displays the stored title, excerpt, body, image, and date without invented metadata.
 - Draft or unpublished records are not visible publicly.
 - Empty, error, and not-found states are explicit.
@@ -53,6 +54,7 @@ Completed:
 
 - **Pending live-content verification:** The configured development database has no published journal posts. The populated index, article detail, cover image, and multi-page feed were verified with mocked data rather than live records.
 - **Pending editorial management:** Phase 10 admin blog publishing is not implemented yet. No published article content was created as part of this phase.
+- **Resolved for client presentation:** Unpublished home-page topic teasers were removed. The home page omits the journal section when there are no published posts.
 - **Resolved:** The first production build found `searchParams` outside a Suspense boundary. The Journal route now reads pagination parameters inside the boundary, and the production build passes.
 - **Resolved:** The CommonJS test harness did not interoperate with the sanitizer's default import. The code now uses the documented named `filterXSS` export, and the sanitization tests pass.
 - **Accepted limitation:** Under Next.js Cache Components, `notFound()` may run after the article shell has streamed, resulting in an HTTP 200 response even though the custom not-found view is shown. As with the property detail route, no unpublished article content is returned.

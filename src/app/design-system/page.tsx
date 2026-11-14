@@ -14,19 +14,21 @@ export const metadata: Metadata = {
 };
 
 const colors = [
-  { label: "Paper", value: "#f7f3f0", token: "--color-paper" },
-  { label: "Surface", value: "#fcfaf8", token: "--color-surface" },
-  { label: "Muted surface", value: "#eee8e4", token: "--color-surface-muted" },
-  { label: "Ink", value: "#211d1a", token: "--color-ink" },
-  { label: "Muted text", value: "#746b65", token: "--color-muted" },
-  { label: "Rule", value: "#d8cfc8", token: "--color-line" },
-  { label: "Terracotta", value: "#9e462c", token: "--color-accent" },
-  { label: "Deep terracotta", value: "#77331f", token: "--color-accent-strong" },
-  { label: "Soft terracotta", value: "#eadbd4", token: "--color-accent-soft" },
-  { label: "Olive", value: "#65715a", token: "--color-olive" },
-  { label: "Soft olive", value: "#e5e9e1", token: "--color-olive-soft" },
-  { label: "Forest", value: "#193d32", token: "--color-forest" },
-  { label: "White", value: "#ffffff", token: "--color-white" },
+  { label: "Near black", value: "#090908", token: "--color-paper" },
+  { label: "Charcoal", value: "#11110e", token: "--color-surface" },
+  { label: "Raised surface", value: "#191914", token: "--color-surface-muted" },
+  { label: "Warm white", value: "#f2efe5", token: "--color-ink" },
+  { label: "Muted text", value: "#aaa697", token: "--color-muted" },
+  { label: "Fine rule", value: "#343225", token: "--color-line" },
+  { label: "Soft rule", value: "#25241e", token: "--color-line-soft" },
+  { label: "Gold", value: "#e4c73e", token: "--color-accent" },
+  { label: "Bright gold", value: "#f0d95e", token: "--color-accent-strong" },
+  { label: "Muted gold", value: "#9b8332", token: "--color-accent-muted" },
+  { label: "Soft olive highlight", value: "#d9c65b", token: "--color-olive-soft" },
+  { label: "Soft gold", value: "#302a14", token: "--color-accent-soft" },
+  { label: "Available marker", value: "#b7c48e", token: "--color-olive" },
+  { label: "Dark panel", value: "#11110e", token: "--color-forest" },
+  { label: "Error", value: "#f08a7d", token: "--color-danger" },
 ];
 
 const typography = [
@@ -90,14 +92,13 @@ export default function DesignSystemPage() {
           <div className="section-heading">
             <div>
               <p className="section-kicker">01 / Color</p>
-              <h2 className="section-title">A palette drawn from paper and earth</h2>
+              <h2 className="section-title">Black, charcoal, and restrained gold</h2>
             </div>
             <p className="section-description">
-              Warm neutrals and paper anchor the system. Forest green carries
-              the strongest panels and interaction states. Use olive for small
-              accents on light surfaces, and soft olive for highlighted words
-              on forest. The italic word above demonstrates that pairing;
-              terracotta remains a restrained accent.
+              Near-black surfaces frame the land imagery. Warm white keeps
+              headings clear. Gold carries key actions and selected details.
+              Muted gray and fine rules separate supporting information without
+              competing with the content.
             </p>
           </div>
           <div className="token-grid">
@@ -237,14 +238,14 @@ export default function DesignSystemPage() {
                   Primary outlined <ArrowUpRight aria-hidden="true" size={14} />
                 </Button>
                 <Button variant="forest">
-                  Forest action <ArrowUpRight aria-hidden="true" size={14} />
+                  Secondary action <ArrowUpRight aria-hidden="true" size={14} />
                 </Button>
                 <Button variant="secondary-text">Secondary text</Button>
                 <Button variant="ghost">Ghost action</Button>
               </div>
               <p className="token-label">Navigation / hover and keyboard focus</p>
               <div className="component-row">
-                <a className="forest-link-sample" href="#components">
+                <a className="gold-link-sample" href="#components">
                   Properties / hover to preview
                 </a>
               </div>
@@ -286,8 +287,7 @@ export default function DesignSystemPage() {
               <div className="card-grid">
                 <PropertyCard
                   href="#components"
-                  imageAlt="Illustrated land contour placeholder."
-                  imageIsPlaceholder
+                  imageAlt="Abstract contour-line illustration of land."
                   imageSrc="/land-placeholder.svg"
                   location="Location and region"
                   plotSize={null}
@@ -300,7 +300,7 @@ export default function DesignSystemPage() {
                   category="Land journal"
                   excerpt="An editorial summary for a future journal article, set with a restrained measure and quiet supporting type."
                   href="#components"
-                  imageLabel="Journal image placeholder"
+                  imageLabel="Illustrated land contour"
                   title="Journal card specimen"
                 />
               </div>

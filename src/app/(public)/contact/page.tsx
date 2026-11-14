@@ -25,9 +25,9 @@ export default async function ContactPage() {
   );
 
   return (
-    <main className="route-page" id="main-content">
+    <main className="route-page contact-page" id="main-content">
       <div className="site-width">
-        <header className="route-intro">
+        <header className="route-intro route-intro--contact">
           <h1 className="route-title">{content["contact.title"]}</h1>
           <p className="route-description">{content["contact.intro"]}</p>
         </header>

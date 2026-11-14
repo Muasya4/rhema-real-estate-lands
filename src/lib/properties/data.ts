@@ -12,9 +12,8 @@ import {
 } from "./model";
 
 export type PropertyListingItem = PublicProperty & {
-  imageSrc: string;
-  imageAlt: string;
-  imageIsPlaceholder: boolean;
+  imageSrc: string | null;
+  imageAlt: string | null;
 };
 
 export type PropertyListingResult =
@@ -25,11 +24,6 @@ export type PropertyDetailResult =
   | { status: "found"; property: PublicPropertyDetail }
   | { status: "not-found" }
   | { status: "error" };
-
-const placeholderImage = {
-  src: "/land-placeholder.svg",
-  alt: "Illustrated land contour placeholder, not a property photograph.",
-};
 
 export async function getPublishedProperties(): Promise<PropertyListingResult> {
   await io();
@@ -101,16 +95,14 @@ export async function getPublishedProperties(): Promise<PropertyListingResult> {
     }
 
     const image = property.images[0];
-    const imageSrc = image
-      ? client.storage.from("property-images").getPublicUrl(image.path).data
-          .publicUrl
-      : placeholderImage.src;
 
     properties.push({
       ...property,
-      imageSrc,
-      imageAlt: image?.alt ?? placeholderImage.alt,
-      imageIsPlaceholder: !image,
+      imageSrc: image
+        ? client.storage.from("property-images").getPublicUrl(image.path).data
+            .publicUrl
+        : null,
+      imageAlt: image?.alt ?? null,
     });
   }
 

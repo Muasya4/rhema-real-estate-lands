@@ -53,7 +53,7 @@ export async function generateMetadata({
       result.property.description,
     ),
     path: `/properties/${encodeURIComponent(result.property.slug)}`,
-    image: result.property.images.find((image) => !image.isPlaceholder)?.src,
+    image: result.property.images[0]?.src,
   });
 }
 
@@ -107,9 +107,7 @@ function PropertyDetailContent({
               description: property.description,
               location: property.location,
               url: propertyUrl,
-              images: property.images
-                .filter((image) => !image.isPlaceholder)
-                .map((image) => image.src),
+              images: property.images.map((image) => image.src),
             })}
           />
           <JsonLd
@@ -148,40 +146,34 @@ function PropertyDetailContent({
         </div>
       </header>
 
-      <section
-        aria-label={`${property.title} ${content["properties.galleryLabelSuffix"]}`}
-        className={`property-detail-gallery${property.images.length === 1 ? " property-detail-gallery--single" : ""}`}
-      >
-        {property.images.map((image, index) => (
-          <figure
-            className={`property-detail-image${index === 0 ? " property-detail-image--primary" : ""}`}
-            key={`${image.src}-${index}`}
-          >
-            <div className="property-detail-image-frame">
-              <Image
-                alt={image.alt}
-                className="property-detail-image-content"
-                fill
-                preload={index === 0}
-                sizes={
-                  index === 0
-                    ? "(max-width: 760px) 100vw, 70vw"
-                    : "(max-width: 760px) 100vw, 35vw"
-                }
-                src={image.src}
-              />
-              {image.isPlaceholder ? (
-                <span
-                  aria-hidden="true"
-                  className="property-detail-image-label"
-                >
-                  {content["properties.detailImagePlaceholder"]}
-                </span>
-              ) : null}
-            </div>
-          </figure>
-        ))}
-      </section>
+      {property.images.length > 0 ? (
+        <section
+          aria-label={`${property.title} ${content["properties.galleryLabelSuffix"]}`}
+          className={`property-detail-gallery${property.images.length === 1 ? " property-detail-gallery--single" : ""}`}
+        >
+          {property.images.map((image, index) => (
+            <figure
+              className={`property-detail-image${index === 0 ? " property-detail-image--primary" : ""}`}
+              key={`${image.src}-${index}`}
+            >
+              <div className="property-detail-image-frame">
+                <Image
+                  alt={image.alt}
+                  className="property-detail-image-content"
+                  fill
+                  preload={index === 0}
+                  sizes={
+                    index === 0
+                      ? "(max-width: 760px) 100vw, 70vw"
+                      : "(max-width: 760px) 100vw, 35vw"
+                  }
+                  src={image.src}
+                />
+              </div>
+            </figure>
+          ))}
+        </section>
+      ) : null}
 
       <div className="property-detail-content">
         <section
@@ -271,7 +263,7 @@ export default async function PropertyDetailPage({
   }
 
   return (
-    <main className="route-page" id="main-content">
+    <main className="route-page property-page" id="main-content">
       <div className="site-width">
         {result.status === "error" ? (
           <PropertyDetailError content={content} />

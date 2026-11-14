@@ -166,15 +166,16 @@ export function LeadershipForm({
           Portrait image
         </h2>
         <p className="admin-form-section-description">
-          Optional. Use a JPEG, PNG, or WebP image up to 5 MiB. The image is
-          public on the website, so do not upload a confidential photo.
+          Optional. Use a square, centered portrait. The About page crops it to
+          a circle. JPEG, PNG, or WebP up to 5 MiB. This image is public, so do
+          not upload a confidential photo.
         </p>
         {imageSrc ? (
           <div className="admin-leadership-image-preview">
             <Image
               alt={`Current portrait of ${profile.fullName}`}
               fill
-              sizes="(max-width: 760px) 100vw, 36rem"
+              sizes="12rem"
               src={imageSrc}
             />
           </div>

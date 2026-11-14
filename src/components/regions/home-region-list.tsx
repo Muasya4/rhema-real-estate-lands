@@ -19,7 +19,7 @@ export async function HomeRegionList({ content }: { content: SiteContent }) {
     >
       {result.regions.map((region) => (
         <li className="home-region-item" key={region.slug}>
-          {region.name}
+          <span className="home-region-name">{region.name}</span>
         </li>
       ))}
     </ul>

@@ -37,7 +37,7 @@ Provide a private inquiry form that records valid inquiries and gives the visito
 - Duplicate submissions and abuse are handled according to the agreed protection approach.
 - Phone and WhatsApp alternatives use the documented contact number.
 - Tests cover validation, mocked successful submission, Turnstile rejection and replay, property association checks, honeypot handling, and insert failure. Existing RLS/grants remain unchanged.
-- Public inquiry labels and feedback wording are editable through the protected site-content editor. Server-side validation rules, Turnstile checks, honeypot behavior, and Supabase authorization remain code-controlled.
+- The Contact page's inquiry-section heading and introduction are editable as page-section copy. Form labels, action text, validation and feedback wording, server-side rules, Turnstile checks, honeypot behavior, and Supabase authorization remain code-controlled.
 
 ## Dependencies
 

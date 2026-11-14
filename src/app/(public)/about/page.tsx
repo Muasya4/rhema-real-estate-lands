@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Suspense } from "react";
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { getPublicLeadershipProfile } from "@/lib/leadership/data";
 import { buildPageMetadata } from "@/lib/seo/site-url";
 import { getPublicSiteContent } from "@/lib/site-content/data";
@@ -38,14 +39,14 @@ async function LeadershipSection({ content }: { content: SiteContent }) {
   return (
     <section
       aria-labelledby="about-leadership-title"
-      className="about-leadership"
+      className={`about-leadership${imageSrc ? "" : " about-leadership--no-image"}`}
     >
       {imageSrc ? (
         <div className="about-leadership-image">
           <Image
             alt={`Portrait of ${profile.fullName}`}
             fill
-            sizes="(max-width: 760px) 100vw, 40vw"
+            sizes="(max-width: 760px) 12rem, 18rem"
             src={imageSrc}
           />
         </div>
@@ -74,21 +75,41 @@ export default async function AboutPage() {
   const content = await getPublicSiteContent();
 
   return (
-    <main className="route-page" id="main-content">
+    <main className="route-page about-page" id="main-content">
       <div className="site-width">
-        <header className="route-intro">
-          <h1 className="route-title">{content["about.title"]}</h1>
-          <p className="route-description">{content["about.intro"]}</p>
+        <header className="route-intro about-intro">
+          <div className="about-intro-heading">
+            <h1 className="route-title">{content["about.title"]}</h1>
+          </div>
+          <div className="about-intro-aside">
+            <p className="route-description">{content["about.intro"]}</p>
+            <div className="about-intro-actions">
+              <Link className="button button--primary-outlined" href="/properties">
+                {content["global.nav.properties"]}
+                <ArrowUpRight aria-hidden="true" size={14} />
+              </Link>
+              <Link className="home-text-link" href="/contact">
+                {content["global.nav.contact"]}
+                <ArrowUpRight aria-hidden="true" size={14} />
+              </Link>
+            </div>
+          </div>
         </header>
 
         <div className="about-company">
           <section aria-labelledby="about-work-title">
+            <span aria-hidden="true" className="about-section-index">
+              01
+            </span>
             <h2 className="about-section-title" id="about-work-title">
               {content["about.workTitle"]}
             </h2>
             <p>{content["about.workCopy"]}</p>
           </section>
           <section aria-labelledby="about-approach-title">
+            <span aria-hidden="true" className="about-section-index">
+              02
+            </span>
             <h2 className="about-section-title" id="about-approach-title">
               {content["about.approachTitle"]}
             </h2>

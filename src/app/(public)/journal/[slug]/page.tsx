@@ -86,7 +86,7 @@ export default async function JournalArticlePage({
 
   if (result.status === "error") {
     return (
-      <main className="route-page" id="main-content">
+      <main className="route-page journal-article-page" id="main-content">
         <div className="site-width">
           <JournalArticleError content={content} />
         </div>
@@ -101,7 +101,7 @@ export default async function JournalArticlePage({
     : null;
 
   return (
-    <main className="route-page" id="main-content">
+    <main className="route-page journal-article-page" id="main-content">
       <div className="site-width">
         {siteUrl && articleUrl ? (
           <JsonLd

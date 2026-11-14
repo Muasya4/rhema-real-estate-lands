@@ -25,9 +25,9 @@ Decisions and issues to track before related implementation:
 
 ## Home page
 
-Expanded `/` into a fuller editorial entry point with portfolio information, a regional directory, enquiry guidance, and planned journal topics. The journal topics are labeled as unpublished placeholders. The page does not display fictional properties, prices, or article content.
+Expanded `/` into a fuller editorial entry point with portfolio information, a regional directory, enquiry guidance, and published journal posts when available. The page does not display fictional properties, prices, or article content.
 
-The local land illustration remains visibly labeled as temporary wherever used.
+The home page uses the existing abstract contour illustration without temporary labels. Published property records without photos render without fallback artwork.
 
 Validation completed:
 
@@ -36,7 +36,7 @@ Validation completed:
 - `npm run build`
 - Browser layout and overflow checks at 390px, 768px, 1024px, and 1440px.
 - Screenshot review of the home page and journal cards at mobile, tablet, and desktop sizes.
-- Confirmed the local placeholder image loads.
+- Confirmed the local contour illustration loads.
 
 ## Phase 02: Layout shell
 
@@ -89,7 +89,7 @@ Validation completed:
 
 ## Phase 04: Property listing
 
-Implemented `/properties` as a server-rendered listing that reads only published records with the anonymous server client and remains subject to database RLS. Records are ordered featured-first and newest-first. The request-time database read sits behind a Suspense boundary and a Next.js `io()` boundary, so it is excluded from static prerendering. The page has distinct empty and read-error states. Cards use stored location, status, price, size, and the first stored image; null values are omitted or rendered as `Price on request`. Missing imagery uses the local illustrated placeholder, visibly labeled as an illustration.
+Implemented `/properties` as a server-rendered listing that reads only published records with the anonymous server client and remains subject to database RLS. Records are ordered featured-first and newest-first. The request-time database read sits behind a Suspense boundary and a Next.js `io()` boundary, so it is excluded from static prerendering. The page has distinct empty and read-error states. Cards use stored location, status, price, size, and the first stored image; null values are omitted or rendered as `Price on request`. Records without uploaded imagery show no image artwork.
 
 Added a property record parser and KES formatter with focused tests. Public Storage image URLs are generated through Supabase Storage, and Next Image remote access is scoped to the configured project host and `property-images` public path. No database writes were made and no additional inquiry was submitted.
 
@@ -114,7 +114,7 @@ The detail page includes property-specific metadata, a responsive image gallery 
 
 Validation completed:
 
-- `npm test`: 28 tests passed, including exact-slug/publication filters, not-found and query-error outcomes, ordered images, placeholder image, metadata description, and existing property-specific inquiry validation.
+- `npm test`: 28 tests passed, including exact-slug/publication filters, not-found and query-error outcomes, ordered images, missing-image handling, metadata description, and existing property-specific inquiry validation.
 - `npx tsc --noEmit`
 - `npm run lint`
 - `npm run build`
@@ -366,17 +366,139 @@ Still pending: the pgTAP suite and authenticated editor/Storage workflows need a
 
 ## Public site content management
 
-Added the protected `/admin/content` editor for fixed public-site wording. The fields are prefilled from saved overrides or the version-controlled copy defaults. Admins can save immediately, restore one section, or confirm a full reset. Property, region, Journal, and CEO records remain in their existing editors. Editable text cannot change routes, contact destinations, metadata origins, structured business facts, or security behavior.
+Narrowed the protected `/admin/content` editor to public page-section headings and descriptive copy. Admins can replace the homepage hero and portfolio images, update their descriptions, and restore one section at a time. Header, navigation, footer, actions, forms, metadata, system messages, destinations, and record-owned content remain outside this editor.
 
-Wired the shared shell, public pages, forms, metadata fallbacks, and public record labels to the shared content reader. Added a `site_content` migration with public reads and admin-only writes, plus model, action, and pgTAP coverage.
+The public content reader ignores previously saved overrides for the now-protected fields. Image uploads reuse the existing public-read/admin-write `property-images` bucket, existing 5 MiB JPEG/PNG/WebP validation, and the `site_content` table. No new database migration or hosted data change was made.
 
 Validation completed:
 
-- `npm test`: 133 tests passed.
+- `npm test`: 141 tests passed.
+- `npx tsc --noEmit`
+- Targeted `npx eslint` on the changed application and test files.
+- `SITE_URL=https://rhema.test npm run build`; all public and admin routes generated successfully.
+- `git diff --check`
+
+The full `npm run lint` command did not finish during this run; targeted lint on the changed files passed. Responsive browser review at 375px, 768px, and 1440px remains pending because integrated browser automation timed out connecting over CDP. The hosted status of the existing site-content migration is unconfirmed, and authenticated image upload/save/restore still needs a Supabase-compatible test project. No hosted database changes or content writes were made.
+
+## Client presentation cleanup
+
+Removed photography-to-be-added and temporary image labels, removed unpublished journal-topic teasers from the home page, and hid the home journal section when there are no published posts. The approved abstract home illustrations remain. Property cards and detail pages no longer render local placeholder artwork when published property records have no uploaded images.
+
+Validation completed:
+
+- `npm test`: 142 passed.
 - `npx tsc --noEmit`
 - `npm run lint`
-- `SITE_URL=https://rhema.test npm run build`; all 29 static-generation work units completed. The local database does not have `site_content`, so build-time reads logged `PGRST205` and used the version-controlled defaults.
+- `npm run build`
 - `git diff --check`
-- The local homepage was readable in the app preview at its current 1200px viewport. Integrated browser automation timed out, so responsive screenshots at 375px, 768px, and 1440px and authenticated editor interaction remain unverified.
 
-Still pending: run the pgTAP suite and authenticated save/reset checks against a Supabase-compatible test project. The migration has not been applied to hosted Supabase, and no live content writes were made.
+Responsive browser review at 375px, 768px, and 1440px remains pending because integrated browser automation could not connect over CDP.
+
+## Zoho Mail handoff guide
+
+Added `ZOHO-FREE-SETUP-FOR-EVANS.md` as the client-facing checklist and `ZOHO-CLOUDFLARE-DEVELOPER-RUNBOOK.md` for the developer's DNS work. The original `ZOHO-FREE-EMAIL-SETUP.md` remains the detailed reference. Evans owns the Zoho account; the developer uses their own authorized Cloudflare access and only the account-specific records Zoho provides. The guides warn against changing website DNS, switching existing mail without approval, or sharing credentials.
+
+Zoho currently lists Free Forever for one custom domain and up to five users, with 5 GB per mailbox and no IMAP/POP/ActiveSync. If Zoho does not offer Free during signup, Evans should stop rather than start a trial or select a paid plan. No Zoho account or DNS settings have been changed. Zoho Free SMTP availability has not been confirmed, so do not configure it for Supabase Auth without verifying support and terms. The mailbox does not create website-admin access or deliver website inquiries by email; inquiry notifications are not implemented.
+
+## Design system V2 adoption
+
+The client-approved black-and-gold system is now applied through shared semantic tokens across public and admin surfaces. The public editorial typography, spacing, and page behavior remain in place. `/design-system` documents the shared token inventory and reusable components; `/design-system-v2` remains a noindex visual showcase using its route-local CSS module. The palette values are adopted interface values derived from the supplied reference and client direction, not a separate official brand specification.
+
+The initial isolated preview validation completed:
+
+- `npx tsc --noEmit`
+- `npx eslint src/app/design-system-v2/page.tsx`
+- `$env:SITE_URL='https://www.rhemarealestates.com'; npm run build`
+- Direct HTTP request to `/design-system-v2` returned 200 and the expected page title and hero heading.
+
+Rollout validation completed:
+
+- `npx tsc --noEmit`, `npm run lint`, and `npm test` passed.
+- The production build passed with a temporary isolated `distDir`. A build using the default `.next` directory first failed with `EPERM` while an existing development server was using that output.
+- An HTTP request to `/design-system-v2` returned 200 with the adopted design-system title.
+- Responsive screenshot and interaction review at 375px, 768px, and 1440px remains pending because integrated browser automation could not connect over CDP.
+
+## Public site editorial redesign
+
+Redesigned the public home, About, property listing/detail, regions, journal listing/article, and contact layouts with page-specific editorial structure and responsive styling. The About page and admin preview render Evans's uploaded portrait in a circular crop when an image is present. Existing content, routes, records, inquiry behavior, and portrait upload rules are preserved.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test`: 142 tests passed.
+- `SITE_URL=https://www.rhemarealestates.com npm run build` completed successfully using a temporary isolated output directory; the temporary directory and generated `tsconfig.json` changes were removed.
+- `git diff --check`
+
+Responsive browser screenshots and interaction checks at 375px, 768px, and 1440px remain pending because integrated browser automation timed out connecting over CDP. The circular crop with an uploaded portrait and authenticated admin upload/save flow were not verified. No hosted database changes, uploads, or permission changes were made.
+
+### Homepage hero first-screen refinement
+
+Reduced homepage hero typography, spacing, and image height so the copy, actions, image, and caption fit in the initial 1200×450 browser viewport. Removed the `01` overlay from the hero image and replaced its square frame with an organic, token-bordered shape. The separate portfolio image marker is unchanged.
+
+Validation completed:
+
+- Shared browser screenshot at 1200×450 showed the full header and hero content in the first screen.
+- `npx tsc --noEmit`
+- `npm run lint`
+- `SITE_URL=https://www.rhemarealestates.com npm run build` passed with a temporary isolated output directory; temporary build files and generated TypeScript configuration changes were removed.
+- `git diff --check`
+
+Screenshots at 375px, 768px, and 1440px could not be captured because the browser automation connection timed out. The hero is responsive by CSS, but those viewport sizes remain unverified.
+
+### Sculpted homepage hero image
+
+Replaced the previous oval-like hero image with a reusable asymmetrical SVG-clipped silhouette and layered gold contours inspired by the supplied reference. The admin hero-image preview uses the same component, including for its existing local object-URL preview before save. Removed the line above the homepage hero caption only. Portfolio and other admin image previews remain rectangular.
+
+Validation completed:
+
+- Homepage desktop screenshot showed the sculpted contour and no divider above the hero caption.
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test`: 142 tests passed.
+- `SITE_URL=https://www.rhemarealestates.com npm run build` passed using a temporary isolated output directory; temporary build output and generated `tsconfig.json` changes were removed.
+- `git diff --check`
+
+Known issues:
+
+- Browser automation timed out connecting over CDP while navigating to `/admin/content`. Admin preview interaction and responsive screenshots at 375px, 768px, and 1440px remain unverified.
+
+### Remove decorative numbering and restyle Regions
+
+Removed the `02` marker from the homepage portfolio image and removed index numbers from the homepage and `/regions` lists. Kept `01–03` on the enquiry guide to retain the process order. Replaced region tiles with open, text-led lists and fine separators.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test`: 142 tests passed.
+- `SITE_URL=https://www.rhemarealestates.com npm run build` passed using a temporary isolated output directory; temporary build output and generated `tsconfig.json` changes were removed.
+- `git diff --check`
+- Source search confirms the only remaining decorative sequence labels are the enquiry step numbers 01–03.
+
+Known issues:
+
+- Browser automation could not navigate to the updated Regions page, and bounded direct HTTP checks of the local homepage and Regions route did not complete. Visual review at 375px, 768px, and 1440px remains pending.
+
+### Remove Regions illustration
+
+Removed the survey-line drawing from both the homepage and `/regions` after client review. The region lists remain open and unboxed with fine separators; no replacement illustration was added. Existing region data, ordering, and enquiry step labels remain unchanged. Deleted the now-unused illustration component and layout CSS.
+
+Validation completed:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test`: 142 tests passed.
+- `SITE_URL=https://www.rhemarealestates.com npm run build` passed using a temporary isolated output directory; temporary build output and generated `tsconfig.json` changes were removed.
+- `git diff --check`
+
+Known issues:
+
+- Browser navigation and bounded direct route checks did not complete. Visual confirmation of the resulting spacing at 375px, 768px, and 1440px remains pending.
+
+## Known issues
+
+- **Resolved:** The preview originally rendered unstyled because the custom Turbopack Tailwind rule matched `.module.css`, leaving route `styles.*` values undefined while emitting plain global selectors. Narrowed the rule to `**/globals.css`, preserving the Tailwind transform for the global stylesheet while allowing native Next/Turbopack CSS Module handling. Verified the dev response has matching scoped class names and CSS selectors, and the production prerender contains module-generated classes.
+- A default production build could not unlink `.next/server/app/(public)` while the existing development server was running. A production build using an isolated output directory completed successfully. No persistent build-directory configuration was added.
+- Responsive browser screenshot and interaction review of the adopted design at 375px, 768px, and 1440px remain pending. The integrated browser connection previously timed out.
+- The first production build attempt failed because `SITE_URL` was unset. Re-running with the documented canonical origin succeeded.

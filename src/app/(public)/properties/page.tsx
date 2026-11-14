@@ -64,7 +64,6 @@ async function PropertyListingContent({ content }: { content: SiteContent }) {
             key={property.id}
             href={`/properties/${property.slug}`}
             imageAlt={property.imageAlt}
-            imageIsPlaceholder={property.imageIsPlaceholder}
             imageSrc={property.imageSrc}
             location={property.location}
             plotSize={property.plotSize}
@@ -83,9 +82,9 @@ export default async function PropertiesPage() {
   const content = await getPublicSiteContent();
 
   return (
-    <main className="route-page" id="main-content">
+    <main className="route-page properties-page" id="main-content">
       <div className="site-width">
-        <header className="route-intro">
+        <header className="route-intro route-intro--properties">
           <h1 className="route-title">{content["properties.title"]}</h1>
           <p className="route-description">{content["properties.intro"]}</p>
         </header>

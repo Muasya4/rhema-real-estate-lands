@@ -20,7 +20,6 @@ export type PublicProperty = {
 export type PropertyDetailImage = {
   src: string;
   alt: string;
-  isPlaceholder: boolean;
 };
 
 export type PublicPropertyDetail = Omit<PublicProperty, "images"> & {
@@ -123,22 +122,12 @@ export function parsePublicPropertyDetail(
   const images = property.images.map((image) => ({
     src: getPublicImageUrl(image.path),
     alt: image.alt,
-    isPlaceholder: false,
   }));
 
   return {
     ...property,
     description,
-    images:
-      images.length > 0
-        ? images
-        : [
-            {
-              src: "/land-placeholder.svg",
-              alt: "Illustrated land contour placeholder, not a property photograph.",
-              isPlaceholder: true,
-            },
-          ],
+    images,
   };
 }
 

@@ -19,7 +19,7 @@ async function RegionsContent({ content }: { content: SiteContent }) {
 
   return (
     <>
-      <header className="route-intro">
+      <header className="route-intro route-intro--regions">
         <h1 className="route-title">{content["regions.title"]}</h1>
         <p className="route-description">{content["regions.intro"]}</p>
       </header>
@@ -35,7 +35,7 @@ async function RegionsContent({ content }: { content: SiteContent }) {
         >
           {result.regions.map((region) => (
             <li className="region-page-item" key={region.slug}>
-              {region.name}
+              <span className="region-page-name">{region.name}</span>
             </li>
           ))}
         </ul>
@@ -54,7 +54,7 @@ export default async function RegionsPage() {
   const content = await getPublicSiteContent();
 
   return (
-    <main className="route-page" id="main-content">
+    <main className="route-page regions-page" id="main-content">
       <div className="site-width">
         <Suspense
           fallback={

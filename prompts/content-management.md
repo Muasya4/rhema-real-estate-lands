@@ -1,5 +1,7 @@
 # Public Site Content Management
 
+> Scope note: the original broad editable-copy proposal below was implemented, then narrowed by the user. The approved current scope is recorded in [content-management-scope-revision.md](./content-management-scope-revision.md). Navigation, footer, actions, forms, metadata, system states, destinations, and record-owned content are now code- or record-controlled.
+
 ## Goal
 
 Let an authorized admin edit the fixed wording shown across Rhema's public website, with fields prefilled from the current wording and a reliable way to restore those original defaults.

@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/auth/guard";
 import { getAdminSiteContent } from "@/lib/site-content/data";
 
 export const metadata: Metadata = {
-  title: "Website content | Admin",
+  title: "Page content | Admin",
   robots: { index: false, follow: false },
 };
 
@@ -17,10 +17,10 @@ async function AdminContent() {
   if (result.status === "error") {
     return (
       <section className="admin-notice" role="alert">
-        <h1>Website wording could not be loaded.</h1>
+        <h1>Page content could not be loaded.</h1>
         <p>
-          Check that the public site content migration is applied, then reload
-          this page.
+          Check that the site content migration is applied, then reload this
+          page.
         </p>
         <Link className="text-link" href="/admin">
           Back to admin
@@ -34,7 +34,7 @@ async function AdminContent() {
       <Link className="text-link" href="/admin">
         Admin home
       </Link>
-      <h1 className="route-title">Website wording</h1>
+      <h1 className="route-title">Edit page content</h1>
       <ContentManager content={result.content} />
     </section>
   );
@@ -47,7 +47,7 @@ export default function AdminContentPage() {
         <Suspense
           fallback={
             <p className="admin-loading" aria-live="polite">
-              Loading website wording...
+              Loading page content...
             </p>
           }
         >

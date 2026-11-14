@@ -8,9 +8,8 @@ import type { SiteContent } from "@/lib/site-content/defaults";
 
 type PropertyCardProps = {
   href: string;
-  imageAlt: string;
-  imageIsPlaceholder?: boolean;
-  imageSrc: string;
+  imageAlt: string | null;
+  imageSrc: string | null;
   location: string;
   plotSize: string | null;
   priceKes: number | null;
@@ -22,7 +21,6 @@ type PropertyCardProps = {
 export function PropertyCard({
   href,
   imageAlt,
-  imageIsPlaceholder = false,
   imageSrc,
   location,
   plotSize,
@@ -33,24 +31,21 @@ export function PropertyCard({
 }: PropertyCardProps) {
   return (
     <article className="property-card">
-      <Link
-        className="property-card__image"
-        href={href}
-        aria-label={`${content["properties.cardLink"]} ${title}`}
-      >
-        <Image
-          alt={imageAlt}
-          className="property-card__image-content"
-          fill
-          sizes="(max-width: 760px) 100vw, 50vw"
-          src={imageSrc}
-        />
-        {imageIsPlaceholder ? (
-          <span className="property-card__image-label">
-            {content["properties.cardImageLabel"]}
-          </span>
-        ) : null}
-      </Link>
+      {imageSrc && imageAlt ? (
+        <Link
+          className="property-card__image"
+          href={href}
+          aria-label={`${content["properties.cardLink"]} ${title}`}
+        >
+          <Image
+            alt={imageAlt}
+            className="property-card__image-content"
+            fill
+            sizes="(max-width: 760px) 100vw, 50vw"
+            src={imageSrc}
+          />
+        </Link>
+      ) : null}
       <div className="card-body">
         <div className="card-meta">
           <span>{location}</span>

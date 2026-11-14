@@ -46,7 +46,7 @@ async function AdminContent() {
         className="button button--primary-outlined admin-dashboard-link"
         href="/admin/content"
       >
-        Edit website wording
+        Edit page content
       </Link>
       <form action={signOutAdmin}>
         <button className="button button--primary-outlined" type="submit">

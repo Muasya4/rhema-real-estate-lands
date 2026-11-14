@@ -89,10 +89,9 @@ test("parses detail fields and preserves the stored image order", () => {
     property.images.map((image) => image.alt),
     ["Front view", "Access road"],
   );
-  assert.equal(property.images[0].isPlaceholder, false);
 });
 
-test("uses a labeled local illustration when detail imagery is absent", () => {
+test("keeps the detail image list empty when imagery is absent", () => {
   const property = parsePublicPropertyDetail(
     createProperty({ images: [], description: "A plot in Kamakis." }),
     () => {
@@ -100,13 +99,7 @@ test("uses a labeled local illustration when detail imagery is absent", () => {
     },
   );
 
-  assert.deepEqual(property.images, [
-    {
-      src: "/land-placeholder.svg",
-      alt: "Illustrated land contour placeholder, not a property photograph.",
-      isPlaceholder: true,
-    },
-  ]);
+  assert.deepEqual(property.images, []);
 });
 
 test("formats a concise metadata description from stored details", () => {

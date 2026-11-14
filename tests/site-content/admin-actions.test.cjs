@@ -5,9 +5,13 @@ const Module = require("node:module");
 const { test } = require("node:test");
 const {
   SITE_CONTENT_DEFAULTS,
-  SITE_CONTENT_KEYS,
   SITE_CONTENT_SECTIONS,
 } = require("../../src/lib/site-content/defaults.ts");
+const {
+  getSiteContentSectionImages,
+} = require("../../src/lib/site-content/model.ts");
+const siteImageValidation = require("../../src/lib/storage/image-validation.ts");
+const { validateImageFile } = siteImageValidation;
 
 const originalLoad = Module._load;
 let currentClient;
@@ -16,6 +20,9 @@ let revalidatedPaths = [];
 let updatedTags = [];
 
 Module._load = function (request, parent, isMain) {
+  if (request === "../../storage/image-validation") {
+    return siteImageValidation;
+  }
   if (request === "../../auth/guard") {
     return {
       async requireAdmin() {
@@ -55,7 +62,7 @@ function createForm(values) {
   return form;
 }
 
-function sectionForm(sectionId, overrides = {}) {
+function sectionForm(sectionId, overrides = {}, files = {}) {
   const section = SITE_CONTENT_SECTIONS.find(({ id }) => id === sectionId);
   if (!section) throw new Error(`Unknown test section: ${sectionId}`);
 
@@ -65,42 +72,80 @@ function sectionForm(sectionId, overrides = {}) {
       ? overrides[key]
       : SITE_CONTENT_DEFAULTS[key];
   }
-  return createForm(values);
+  const form = createForm(values);
+  for (const [name, file] of Object.entries(files)) {
+    form.set(name, file);
+  }
+  return form;
 }
 
 function createClient({
   saveError = null,
   resetError = null,
   returnedRows,
+  imageRows = [],
+  imageReadError = null,
+  uploadError = null,
+  removeError = null,
 } = {}) {
-  const calls = { upsert: [], delete: [] };
+  const calls = { upsert: [], delete: [], upload: [], remove: [] };
   currentClient = {
     from(table) {
       assert.equal(table, "site_content");
       let rows = [];
+      let mode = "read";
       return {
         upsert(values) {
+          mode = "upsert";
           rows = values;
           calls.upsert.push(values);
           return this;
         },
-        async select() {
-          return {
+        select() {
+          if (mode !== "upsert") mode = "read";
+          return this;
+        },
+        async then(resolve, reject) {
+          return Promise.resolve({
             data:
               returnedRows ??
               rows.map(({ content_key }) => ({ content_key })),
             error: saveError,
-          };
-        },
-        delete() {
-          return this;
+          }).then(resolve, reject);
         },
         async in(column, values) {
           assert.equal(column, "content_key");
+          if (mode === "read") {
+            return {
+              data: imageRows.filter((row) => values.includes(row.content_key)),
+              error: imageReadError,
+            };
+          }
           calls.delete.push(values);
-          return { error: resetError };
+          return {
+            error: resetError,
+          };
+        },
+        delete() {
+          mode = "delete";
+          return this;
         },
       };
+    },
+    storage: {
+      from(bucket) {
+        assert.equal(bucket, "property-images");
+        return {
+          async upload(path, file, options) {
+            calls.upload.push({ path, file, options });
+            return { error: uploadError };
+          },
+          async remove(paths) {
+            calls.remove.push(paths);
+            return { error: removeError };
+          },
+        };
+      },
     },
   };
   return calls;
@@ -115,7 +160,7 @@ test("rejects content mutations from non-admin users", async () => {
   adminAllowed = false;
   try {
     await assert.rejects(
-      saveSiteContentSection({}, sectionForm("shared")),
+      saveSiteContentSection({}, sectionForm("home-hero")),
       (error) => error.message === "not-admin",
     );
   } finally {
@@ -123,22 +168,25 @@ test("rejects content mutations from non-admin users", async () => {
   }
 });
 
-test("saves all fields in a supported section and invalidates public content", async () => {
+test("saves only approved editorial fields and invalidates public content", async () => {
   const calls = createClient();
   revalidatedPaths = [];
   updatedTags = [];
 
   const result = await saveSiteContentSection(
     {},
-    sectionForm("home", { "home.titleStart": "Plots across" }),
+    sectionForm("home-hero", { "home.title": "Plots across Nairobi." }),
   );
 
   assert.equal(result.status, "success");
-  assert.equal(calls.upsert[0].length, SITE_CONTENT_SECTIONS.find(({ id }) => id === "home").fields.length);
+  assert.equal(
+    calls.upsert[0].length,
+    SITE_CONTENT_SECTIONS.find(({ id }) => id === "home-hero").fields.length,
+  );
   assert.ok(
     calls.upsert[0].some(
       ({ content_key, content_value }) =>
-        content_key === "home.titleStart" && content_value === "Plots across",
+        content_key === "home.title" && content_value === "Plots across Nairobi.",
     ),
   );
   assert.deepEqual(updatedTags, ["public-site-content"]);
@@ -146,33 +194,33 @@ test("saves all fields in a supported section and invalidates public content", a
   assert.ok(revalidatedPaths.includes("/admin/content"));
 });
 
-test("rejects empty fields and unsupported sections before writing", async () => {
+test("rejects empty fields and protected or unsupported sections before writing", async () => {
   const calls = createClient();
   const emptyResult = await saveSiteContentSection(
     {},
-    sectionForm("home", { "home.titleStart": " " }),
+    sectionForm("home-hero", { "home.title": " " }),
   );
   const unsupportedResult = await saveSiteContentSection(
     {},
-    createForm({ sectionId: "unknown" }),
+    createForm({ sectionId: "shared" }),
   );
 
   assert.equal(emptyResult.status, "error");
-  assert.ok(emptyResult.fieldErrors["home.titleStart"]);
+  assert.ok(emptyResult.fieldErrors["home.title"]);
   assert.equal(unsupportedResult.status, "error");
   assert.equal(calls.upsert.length, 0);
 });
 
 test("does not report success when the database write fails or returns incomplete rows", async () => {
   createClient({ saveError: { code: "42501" } });
-  const failedResult = await saveSiteContentSection({}, sectionForm("shared"));
+  const failedResult = await saveSiteContentSection({}, sectionForm("home-hero"));
   assert.equal(failedResult.status, "error");
 
   createClient({ returnedRows: [] });
-  const incompleteResult = await saveSiteContentSection({}, sectionForm("shared"));
+  const incompleteResult = await saveSiteContentSection({}, sectionForm("home-hero"));
   assert.equal(incompleteResult.status, "error");
 
-  const firstKey = SITE_CONTENT_SECTIONS.find(({ id }) => id === "shared").fields[0].key;
+  const firstKey = SITE_CONTENT_SECTIONS.find(({ id }) => id === "home-hero").fields[0].key;
   createClient({
     returnedRows: [
       { content_key: firstKey },
@@ -181,7 +229,7 @@ test("does not report success when the database write fails or returns incomplet
   });
   const duplicateResult = await saveSiteContentSection(
     {},
-    sectionForm("shared"),
+    sectionForm("home-hero"),
   );
   assert.equal(duplicateResult.status, "error");
 });
@@ -193,24 +241,29 @@ test("restores only the selected section and revalidates the site", async () => 
 
   const result = await restoreSiteContent(
     {},
-    createForm({ scope: "home" }),
+    createForm({ scope: "home-hero" }),
   );
 
-  const homeKeys = SITE_CONTENT_SECTIONS.find(({ id }) => id === "home").fields.map(
-    ({ key }) => key,
-  );
+  const homeKeys = [
+    ...SITE_CONTENT_SECTIONS.find(({ id }) => id === "home-hero").fields.map(
+      ({ key }) => key,
+    ),
+    ...SITE_CONTENT_SECTIONS.find(({ id }) => id === "home-hero").images.map(
+      ({ key }) => key,
+    ),
+  ];
   assert.equal(result.status, "success");
   assert.deepEqual(calls.delete, [homeKeys]);
   assert.deepEqual(updatedTags, ["public-site-content"]);
   assert.ok(revalidatedPaths.includes("/"));
 });
 
-test("all-site restore removes only known editable keys", async () => {
+test("all-site restore is no longer an available reset scope", async () => {
   const calls = createClient();
   const result = await restoreSiteContent({}, createForm({ scope: "all" }));
 
-  assert.equal(result.status, "success");
-  assert.deepEqual(calls.delete, [SITE_CONTENT_KEYS]);
+  assert.equal(result.status, "error");
+  assert.deepEqual(calls.delete, []);
 });
 
 test("does not report a successful reset when the database rejects deletion", async () => {
@@ -218,8 +271,151 @@ test("does not report a successful reset when the database rejects deletion", as
 
   const result = await restoreSiteContent(
     {},
-    createForm({ scope: "home" }),
+    createForm({ scope: "home-hero" }),
   );
 
   assert.equal(result.status, "error");
+});
+
+test("uploads a homepage image only after validating its alt text and stores its generated path", async () => {
+  const oldPath =
+    "site-content/home/hero/12345678-1234-1234-1234-123456789abc.jpg";
+  const calls = createClient({
+    imageRows: [
+      { content_key: "home.heroImagePath", content_value: oldPath },
+    ],
+  });
+  const file = new File(
+    [new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+    "land.png",
+    { type: "image/png" },
+  );
+
+  const result = await saveSiteContentSection(
+    {},
+    sectionForm(
+      "home-hero",
+      { "home.heroImageAlt": "Open land beside a road in Kamakis" },
+      { "image.home.heroImagePath": file },
+    ),
+  );
+
+  assert.equal(result.status, "success");
+  assert.equal(calls.upload.length, 1);
+  assert.match(calls.upload[0].path, /^site-content\/home\/hero\/[0-9a-f-]+\.png$/);
+  assert.ok(
+    calls.upsert[0].some(
+      ({ content_key, content_value }) =>
+        content_key === "home.heroImagePath" &&
+        content_value === calls.upload[0].path,
+    ),
+  );
+  assert.deepEqual(calls.remove, [[oldPath]]);
+});
+
+test("requires a useful image description before replacing the hero image", async () => {
+  const calls = createClient();
+  const file = new File(
+    [new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+    "land.png",
+    { type: "image/png" },
+  );
+
+  const result = await saveSiteContentSection(
+    {},
+    sectionForm(
+      "home-hero",
+      {},
+      { "image.home.heroImagePath": file },
+    ),
+  );
+
+  assert.equal(result.status, "error");
+  assert.ok(result.fieldErrors["home.heroImageAlt"]);
+  assert.equal(calls.upload.length, 0);
+});
+
+test("reports invalid image files and does not upload them", async () => {
+  const calls = createClient();
+  const file = new File(["not an image"], "land.txt", {
+    type: "text/plain",
+  });
+
+  const form = sectionForm(
+    "home-hero",
+    { "home.heroImageAlt": "Open land in Kamakis" },
+    { "image.home.heroImagePath": file },
+  );
+  assert.equal(form.get("image.home.heroImagePath").type, "text/plain");
+  assert.equal(form.get("image.home.heroImagePath").size, file.size);
+  assert.equal(getSiteContentSectionImages("home-hero").length, 1);
+  assert.match(await validateImageFile(form.get("image.home.heroImagePath")), /JPEG/);
+  const result = await saveSiteContentSection({}, form);
+
+  assert.equal(result.status, "error");
+  assert.ok(result.fieldErrors["home.heroImagePath"]);
+  assert.equal(calls.upload.length, 0);
+});
+
+test("removes a newly uploaded image when the content write fails", async () => {
+  const calls = createClient({ saveError: { code: "42501" } });
+  const file = new File(
+    [new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+    "land.png",
+    { type: "image/png" },
+  );
+
+  const result = await saveSiteContentSection(
+    {},
+    sectionForm(
+      "home-hero",
+      { "home.heroImageAlt": "Open land in Kamakis" },
+      { "image.home.heroImagePath": file },
+    ),
+  );
+
+  assert.equal(result.status, "error");
+  assert.equal(calls.upload.length, 1);
+  assert.deepEqual(calls.remove, [[calls.upload[0].path]]);
+});
+
+test("restoring an image section deletes its override and unused image", async () => {
+  const imagePath =
+    "site-content/home/portfolio/12345678-1234-1234-1234-123456789abc.webp";
+  const calls = createClient({
+    imageRows: [
+      { content_key: "home.portfolioImagePath", content_value: imagePath },
+    ],
+  });
+
+  const result = await restoreSiteContent(
+    {},
+    createForm({ scope: "home-portfolio" }),
+  );
+
+  assert.equal(result.status, "success");
+  assert.ok(
+    calls.delete[0].includes("home.portfolioImagePath"),
+  );
+  assert.deepEqual(calls.remove, [[imagePath]]);
+});
+
+test("reports orphaned image cleanup failures after restoring defaults", async () => {
+  const imagePath =
+    "site-content/home/hero/12345678-1234-1234-1234-123456789abc.png";
+  const calls = createClient({
+    imageRows: [
+      { content_key: "home.heroImagePath", content_value: imagePath },
+    ],
+    removeError: { code: "403" },
+  });
+
+  const result = await restoreSiteContent(
+    {},
+    createForm({ scope: "home-hero" }),
+  );
+
+  assert.equal(result.status, "success");
+  assert.match(result.message, /could not be removed from Storage/);
+  assert.deepEqual(calls.remove, [[imagePath]]);
 });

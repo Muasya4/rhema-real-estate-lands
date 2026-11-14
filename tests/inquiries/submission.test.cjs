@@ -144,7 +144,7 @@ test("database failure is returned as an error, not success", async () => {
   assert.match(result.message, /was not sent/);
 });
 
-test("inquiry validation and feedback use the current editable site copy", async () => {
+test("inquiry validation and feedback use the content supplied by the caller", async () => {
   const { dependencies } = createDependencies();
   const content = {
     ...getDefaultSiteContent(),
